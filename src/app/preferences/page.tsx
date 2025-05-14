@@ -1,9 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSession } from "next-auth/react"
 import { Ingredient, Preferencia } from "@prisma/client"
 import { toast } from "sonner"
