@@ -9,9 +9,9 @@ export default function Navbar() {
 
   if (status === 'loading') return null
 
-  // Si está autenticado, mostramos la navbar personalizada según el rol
+  // Si está autenticado, mostramos la navbar personalizada
   if (session?.user) {
-    return <UserNavbar role={session.user.role} name={session.user.name} />
+    return <UserNavbar />  // ✅ SIN props
   }
 
   // Si no está autenticado, mostramos la barra pública
