@@ -11,17 +11,22 @@ export async function GET() {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-    },
-  })
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    })
 
-  return NextResponse.json(users)
+    return NextResponse.json(users)
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
+  }
 }
 
 // PATCH /api/admin/users - Cambiar rol
@@ -32,16 +37,24 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const { userId, role } = await req.json()
+  try {
+    const { userId, role } = await req.json()
 
-  if (!userId || !['ADMIN', 'CLIENT'].includes(role)) {
-    return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    if (
+      typeof userId !== 'string' ||
+      !['ADMIN', 'CLIENT'].includes(role)
+    ) {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    })
+
+    return NextResponse.json({ message: 'Rol actualizado', user: updated })
+  } catch (error) {
+    console.error('Error al actualizar rol:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: { role },
-  })
-
-  return NextResponse.json({ message: 'Rol actualizado', user: updated })
 }

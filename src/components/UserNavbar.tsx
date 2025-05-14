@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { signOut, useSession } from 'next-auth/react'
 
 export default function UserNavbar() {
@@ -13,10 +14,12 @@ export default function UserNavbar() {
       {/* Izquierda: logo + saludo */}
       <div className="flex items-center space-x-4">
         <Link href="/">
-          <img
+          <Image
             src="/images/logoblanco.jpg"
             alt="Wonders Logo"
-            className="h-10 w-10 rounded-full object-cover border border-white"
+            width={40}
+            height={40}
+            className="rounded-full object-cover border border-white"
           />
         </Link>
         <span className="text-sm md:text-base">Hola, {name.split(' ')[0]}</span> 

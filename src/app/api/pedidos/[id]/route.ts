@@ -12,8 +12,9 @@ export async function GET(req: NextRequest) {
 
   // Extraer el ID desde la URL
   const id = req.nextUrl.pathname.split('/').pop()
-  if (!id) {
-    return NextResponse.json({ error: 'ID no proporcionado' }, { status: 400 })
+
+  if (!id || typeof id !== 'string') {
+    return NextResponse.json({ error: 'ID no proporcionado o inválido' }, { status: 400 })
   }
 
   try {
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(pedido)
   } catch (error) {
-    console.error('Error al obtener pedido:', error)
+    console.error('❌ Error al obtener pedido:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

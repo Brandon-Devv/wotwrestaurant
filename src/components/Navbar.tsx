@@ -11,7 +11,7 @@ export default function Navbar() {
 
   // Si está autenticado, mostramos la navbar personalizada
   if (session?.user) {
-    return <UserNavbar />  // ✅ SIN props
+    return <UserNavbar />  // ✅ SIN props, ya se obtiene la sesión internamente
   }
 
   // Si no está autenticado, mostramos la barra pública
