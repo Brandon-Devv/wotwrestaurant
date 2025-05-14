@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  name         String
+  role         Role          @default(CLIENT)
+  createdAt    DateTime      @default(now())
+  pedidos      Pedido[]
+  preferencias Preferencia[]
+  carrito      Carrito[]
+}
+
+model Product {
+  id           String              @id @default(uuid())
+  nombre       String              @unique
+  vegano       Boolean
+  tipo         TipoComida
+  precio       Float               @default(1)
+  stock        Int                 @default(0)
+  itemsPedido  ItemPedido[]
+  ingredientes ProductIngredient[]
+  Carrito      Carrito[]
+}
+
+model Ingredient {
+  id             String              @id @default(uuid())
+  nombre         String              @unique
+  aptoVegano     Boolean
+  origen         String
+  tipoAlimento   String
+  proveedor      String
+  lote           String
+  registro       String
+  fechaIngreso   DateTime
+  fechaCaducidad DateTime
+  preferencias   Preferencia[]
+  productos      ProductIngredient[]
+}
+
+model ProductIngredient {
+  id            String     @id @default(uuid())
+  productoId    String
+  ingredienteId String
+  ingrediente   Ingredient @relation(fields: [ingredienteId], references: [id])
+  producto      Product    @relation(fields: [productoId], references: [id])
+}
+
+model Preferencia {
+  id            String     @id @default(uuid())
+  userId        String
+  ingredienteId String
+  ingrediente   Ingredient @relation(fields: [ingredienteId], references: [id])
+  usuario       User       @relation(fields: [userId], references: [id])
+
+  @@unique([userId, ingredienteId])
+}
+
+model Pedido {
+  id     String       @id @default(uuid())
+  userId String
+  fecha  DateTime     @default(now())
+  total  Float
+  items  ItemPedido[]
+  user   User         @relation(fields: [userId], references: [id])
+}
+
+model ItemPedido {
+  id         String  @id @default(uuid())
+  pedidoId   String
+  productoId String
+  cantidad   Int
+  subtotal   Float
+  pedido     Pedido  @relation(fields: [pedidoId], references: [id])
+  producto   Product @relation(fields: [productoId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum TipoComida {
+  ALMUERZO
+  CENA
+  COMIDA_RAPIDA
+}
+
+model Carrito {
+  id             String @id @default(uuid())
+  userId         String
+  productoId     String
+  cantidad       Int
+  precioUnitario Float
+
+  user     User    @relation(fields: [userId], references: [id])
+  producto Product @relation(fields: [productoId], references: [id])
+
+  @@unique([userId, productoId])
+}

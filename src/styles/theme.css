@@ -1,0 +1,14 @@
+:root {
+  --color-primary: #2f855a;     /* verde principal */
+  --color-secondary: #38a169;   /* verde más brillante */
+  --color-text: #1a202c;        /* gris oscuro para texto */
+  --color-bg: #ffffff;          /* fondo blanco */
+  --color-bg-muted: #f7fafc;    /* gris claro */
+  --color-border: #e2e8f0;      /* borde gris suave */
+  --color-error: #e53e3e;       /* rojo para advertencias */
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
