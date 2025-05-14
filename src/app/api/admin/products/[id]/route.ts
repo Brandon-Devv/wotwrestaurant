@@ -1,18 +1,24 @@
 // ✅ Archivo: src/app/api/admin/products/[id]/route.ts
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 
-export async function PUT(req: Request, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
 
   if (session?.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const { id } = context.params
+  // Extraer ID desde la URL
+  const id = req.nextUrl.pathname.split('/').pop()
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID no proporcionado' }, { status: 400 })
+  }
+
   const data = await req.json()
 
   try {
@@ -26,6 +32,10 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
 
     return NextResponse.json(actualizado)
   } catch (error) {
-    return NextResponse.json({ error: 'No se pudo actualizar el producto' }, { status: 500 })
+    console.error('❌ Error al actualizar producto:', error)
+    return NextResponse.json(
+      { error: 'No se pudo actualizar el producto' },
+      { status: 500 }
+    )
   }
 }
