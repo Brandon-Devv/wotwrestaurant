@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import Image from 'next/image'
 
 interface Product {
   id: string
@@ -16,6 +17,7 @@ export default function AdminProductsPage() {
   const { data: session } = useSession()
   const [productos, setProductos] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorImages, setErrorImages] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetch('/api/admin/products')
@@ -58,6 +60,10 @@ export default function AdminProductsPage() {
     }
   }
 
+  const handleImageError = (id: string) => {
+    setErrorImages(prev => ({ ...prev, [id]: true }))
+  }
+
   if (!session || session.user.role !== 'ADMIN') {
     return <p className="p-4">No autorizado.</p>
   }
@@ -68,54 +74,60 @@ export default function AdminProductsPage() {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-center">🛠️ Administración de Productos</h1>
       <div className="grid grid-cols-1 gap-6">
-        {productos.map(producto => (
-          <div
-            key={producto.id}
-            className="flex items-center gap-6 p-4 rounded shadow bg-white border border-gray-200"
-          >
-            <img
-              src={`/images/${producto.nombre.toLowerCase().replace(/\s/g, '-')}.jpg`}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/default.jpg'
-              }}
-              alt={producto.nombre}
-              className="w-32 h-32 object-cover rounded"
-            />
+        {productos.map(producto => {
+          const imageUrl = errorImages[producto.id]
+            ? '/images/default.jpg'
+            : `/images/${producto.nombre.toLowerCase().replace(/\s/g, '-')}.jpg`
 
-            <div className="flex-1 space-y-2">
-              <h2 className="text-xl font-semibold">{producto.nombre}</h2>
-              <p className="text-sm text-gray-500 capitalize">Tipo: {producto.tipo}</p>
+          return (
+            <div
+              key={producto.id}
+              className="flex items-center gap-6 p-4 rounded shadow bg-white border border-gray-200"
+            >
+              <Image
+                src={imageUrl}
+                alt={producto.nombre}
+                width={128}
+                height={128}
+                className="object-cover rounded"
+                onError={() => handleImageError(producto.id)}
+              />
 
-              <div className="flex gap-4">
-                <div>
-                  <label className="text-sm block text-gray-600">Precio ($)</label>
-                  <input
-                    type="number"
-                    value={isNaN(producto.precio) ? '' : producto.precio}
-                    onChange={e => handleChange(producto.id, 'precio', e.target.value)}
-                    className="border px-2 py-1 rounded w-24"
-                  />
+              <div className="flex-1 space-y-2">
+                <h2 className="text-xl font-semibold">{producto.nombre}</h2>
+                <p className="text-sm text-gray-500 capitalize">Tipo: {producto.tipo}</p>
+
+                <div className="flex gap-4">
+                  <div>
+                    <label className="text-sm block text-gray-600">Precio ($)</label>
+                    <input
+                      type="number"
+                      value={isNaN(producto.precio) ? '' : producto.precio}
+                      onChange={e => handleChange(producto.id, 'precio', e.target.value)}
+                      className="border px-2 py-1 rounded w-24"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm block text-gray-600">Stock</label>
+                    <input
+                      type="number"
+                      value={isNaN(producto.stock) ? '' : producto.stock}
+                      onChange={e => handleChange(producto.id, 'stock', e.target.value)}
+                      className="border px-2 py-1 rounded w-20"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm block text-gray-600">Stock</label>
-                  <input
-                    type="number"
-                    value={isNaN(producto.stock) ? '' : producto.stock}
-                    onChange={e => handleChange(producto.id, 'stock', e.target.value)}
-                    className="border px-2 py-1 rounded w-20"
-                  />
-                </div>
+
+                <button
+                  onClick={() => handleGuardar(producto.id)}
+                  className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                  Guardar
+                </button>
               </div>
-
-              <button
-                onClick={() => handleGuardar(producto.id)}
-                className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-              >
-                Guardar
-              </button>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

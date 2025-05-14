@@ -1,14 +1,17 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function DefaultNavbar() {
   return (
     <nav className="bg-green-600 text-white px-6 py-4 flex justify-between items-center shadow">
       {/* Logo redondo a home */}
       <Link href="/">
-        <img
+        <Image
           src="/images/logoblanco.jpg"
           alt="Wonders Logo"
-          className="h-10 w-10 rounded-full object-cover border border-white"
+          width={40}
+          height={40}
+          className="rounded-full object-cover border border-white"
         />
       </Link>
 

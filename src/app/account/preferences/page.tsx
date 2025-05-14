@@ -1,7 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { DndContext, closestCenter } from '@dnd-kit/core'
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+} from '@dnd-kit/core'
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -10,6 +14,10 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import axios from 'axios'
+
+interface Ingrediente {
+  nombre: string
+}
 
 function SortableItem({ id }: { id: string }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
@@ -35,30 +43,41 @@ export default function PreferencesPage() {
   const [preferencias, setPreferencias] = useState<string[]>([])
   const [intolerancias, setIntolerancias] = useState<string[]>([])
   const [ingredientesIniciales, setIngredientesIniciales] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     async function fetchData() {
-      const res = await axios.get('/api/preferences')
-      const all = [...res.data.preferencias, ...res.data.intolerancias]
-      setIngredientesIniciales(all.map((i: any) => i.nombre || i))
-      setPreferencias(res.data.preferencias.map((i: any) => i.nombre || i))
-      setIntolerancias(res.data.intolerancias.map((i: any) => i.nombre || i))
-      setLoading(false)
+      try {
+        const res = await axios.get('/api/preferences')
+        const preferenciasData: Ingrediente[] = res.data.preferencias || []
+        const intoleranciasData: Ingrediente[] = res.data.intolerancias || []
+
+        const all: string[] = [...preferenciasData, ...intoleranciasData].map((i) => i.nombre)
+        setIngredientesIniciales(all)
+        setPreferencias(preferenciasData.map((i) => i.nombre))
+        setIntolerancias(intoleranciasData.map((i) => i.nombre))
+      } catch (error: unknown) {
+        console.error('Error al obtener preferencias:', error)
+      } finally {
+        setLoading(false)
+      }
     }
+
     fetchData()
   }, [])
 
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    if (preferencias.includes(active.id)) {
-      setPreferencias((prev) => prev.filter((i) => i !== active.id))
-      setIntolerancias((prev) => [...prev, active.id])
-    } else if (intolerancias.includes(active.id)) {
-      setIntolerancias((prev) => prev.filter((i) => i !== active.id))
-      setPreferencias((prev) => [...prev, active.id])
+    const id = String(active.id)
+
+    if (preferencias.includes(id)) {
+      setPreferencias((prev) => prev.filter((i) => i !== id))
+      setIntolerancias((prev) => [...prev, id])
+    } else if (intolerancias.includes(id)) {
+      setIntolerancias((prev) => prev.filter((i) => i !== id))
+      setPreferencias((prev) => [...prev, id])
     }
   }
 
@@ -101,7 +120,7 @@ export default function PreferencesPage() {
               <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
               <SortableContext items={preferencias} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {preferencias.map((item) => (
+                  {preferencias.map((item: string) => (
                     <SortableItem key={item} id={item} />
                   ))}
                 </ul>
@@ -112,7 +131,7 @@ export default function PreferencesPage() {
               <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
               <SortableContext items={intolerancias} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {intolerancias.map((item) => (
+                  {intolerancias.map((item: string) => (
                     <SortableItem key={item} id={item} />
                   ))}
                 </ul>

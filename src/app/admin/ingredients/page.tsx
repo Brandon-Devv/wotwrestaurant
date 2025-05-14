@@ -24,7 +24,7 @@ export default function IngredientsPage() {
 
   const fetchIngredientes = async () => {
     const res = await fetch('/api/admin/ingredients')
-    const data = await res.json()
+    const data: Ingredient[] = await res.json()
     setIngredients(data)
   }
 
@@ -34,26 +34,25 @@ export default function IngredientsPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
+    const inputName = name as keyof Ingredient
     setForm(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [inputName]: type === 'checkbox' ? checked : value,
     }))
   }
 
   const handleSubmit = async () => {
-    if (editId) {
-      await fetch(`/api/admin/ingredients/${editId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-    } else {
-      await fetch('/api/admin/ingredients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-    }
+    const url = editId
+      ? `/api/admin/ingredients/${editId}`
+      : '/api/admin/ingredients'
+    const method = editId ? 'PUT' : 'POST'
+
+    await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+
     setEditId(null)
     setForm({})
     await fetchIngredientes()
@@ -77,7 +76,9 @@ export default function IngredientsPage() {
       style={{ backgroundImage: "url('/images/fondovectores.png')" }}
     >
       <div className="bg-white bg-opacity-95 backdrop-blur-md max-w-6xl mx-auto rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-center text-green-700 mb-10">🧪 Matriz de Trazabilidad</h1>
+        <h1 className="text-3xl font-bold text-center text-green-700 mb-10">
+          🧪 Matriz de Trazabilidad
+        </h1>
 
         {/* Formulario */}
         <section className="mb-12">
@@ -85,18 +86,19 @@ export default function IngredientsPage() {
             {editId ? 'Editar Ingrediente' : 'Agregar Ingrediente'}
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {[
-              'nombre', 'origen', 'tipoAlimento', 'proveedor', 'lote', 'registro'
-            ].map((field) => (
-              <input
-                key={field}
-                name={field}
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={(form as any)[field] || ''}
-                onChange={handleChange}
-                className="p-2 border border-gray-300 rounded"
-              />
-            ))}
+            {(Object.keys(form) as (keyof Ingredient)[])
+              .filter(field => ['nombre', 'origen', 'tipoAlimento', 'proveedor', 'lote', 'registro'].includes(field))
+              .map((field) => (
+                <input
+                  key={field}
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={form[field] as string || ''}
+                  onChange={handleChange}
+                  className="p-2 border border-gray-300 rounded"
+                />
+              ))}
+
             <input
               type="date"
               name="fechaIngreso"
@@ -166,8 +168,18 @@ export default function IngredientsPage() {
                     <td className="p-2">{i.fechaIngreso?.slice(0, 10)}</td>
                     <td className="p-2">{i.fechaCaducidad?.slice(0, 10)}</td>
                     <td className="p-2 space-x-2">
-                      <button onClick={() => handleEdit(i)} className="bg-yellow-500 text-white px-2 py-1 rounded">Editar</button>
-                      <button onClick={() => handleDelete(i.id, i.nombre)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
+                      <button
+                        onClick={() => handleEdit(i)}
+                        className="bg-yellow-500 text-white px-2 py-1 rounded"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(i.id, i.nombre)}
+                        className="bg-red-600 text-white px-2 py-1 rounded"
+                      >
+                        Eliminar
+                      </button>
                     </td>
                   </tr>
                 ))}

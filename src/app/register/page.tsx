@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import bcrypt from 'bcryptjs'
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -73,11 +74,14 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white">
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in border border-green-100">
+        {/* Logo corregido */}
         <div className="flex justify-center mb-6">
-          <img
+          <Image
             src="/images/logoblanco.jpg"
             alt="Logo"
-            className="h-20 w-20 rounded-full border border-gray-300 shadow"
+            width={80}
+            height={80}
+            className="rounded-full border border-gray-300 shadow"
           />
         </div>
 

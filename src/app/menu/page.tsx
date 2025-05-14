@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { usePersistentCart } from '@/lib/hooks/usePersistentCart'
+import Image from 'next/image'
 
 export default function MenuPage() {
   const { data: session } = useSession()
@@ -13,6 +14,8 @@ export default function MenuPage() {
   const [preferidos, setPreferidos] = useState<any[]>([])
   const [restringidos, setRestringidos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [errorImagenes, setErrorImagenes] = useState<Record<string, boolean>>({})
 
   const [filtro, setFiltro] = useState<'todos' | 'vegano' | 'no_vegano'>('todos')
   const [tipo, setTipo] = useState<'todos' | 'Almuerzo' | 'Cena' | 'Comida Rápida'>('todos')
@@ -54,6 +57,10 @@ export default function MenuPage() {
     }
   }
 
+  const handleImageError = (id: string) => {
+    setErrorImagenes(prev => ({ ...prev, [id]: true }))
+  }
+
   if (loading) {
     return <p className="text-center mt-10">Cargando menú...</p>
   }
@@ -91,32 +98,40 @@ export default function MenuPage() {
         <section className="mb-14">
           <h2 className="text-2xl font-semibold mb-6 text-green-700">🟢 Productos Disponibles</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {preferidos.map((producto, index) => (
-              <div key={index} className="bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition-all">
-                <img
-                  src={`/images/${producto.nombre.toLowerCase().replace(/\s/g, '-')}.jpg`}
-                  alt={producto.nombre}
-                  className="w-full h-40 object-cover rounded-md mb-4"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/default.jpg'
-                  }}
-                />
-                <h2 className="text-xl font-semibold text-gray-800">{producto.nombre}</h2>
-                <p className="text-sm text-gray-500 capitalize">{producto.tipo}</p>
-                <p className="text-sm text-green-700 mt-1 font-semibold">
-                  ${producto.precio?.toLocaleString() || 'N/A'}
-                </p>
-                <p className="text-sm mt-2 text-gray-600">
-                  Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}
-                </p>
-                <button
-                  className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                  onClick={() => handleAgregar(producto)}
-                >
-                  Agregar al carrito
-                </button>
-              </div>
-            ))}
+            {preferidos.map((producto) => {
+              const id = producto.id
+              const nombre = producto.nombre.toLowerCase().replace(/\s/g, '-')
+              const src = errorImagenes[id]
+                ? '/images/default.jpg'
+                : `/images/${nombre}.jpg`
+
+              return (
+                <div key={id} className="bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition-all">
+                  <Image
+                    src={src}
+                    alt={producto.nombre}
+                    width={400}
+                    height={160}
+                    className="object-cover rounded-md mb-4 w-full h-40"
+                    onError={() => handleImageError(id)}
+                  />
+                  <h2 className="text-xl font-semibold text-gray-800">{producto.nombre}</h2>
+                  <p className="text-sm text-gray-500 capitalize">{producto.tipo}</p>
+                  <p className="text-sm text-green-700 mt-1 font-semibold">
+                    ${producto.precio?.toLocaleString() || 'N/A'}
+                  </p>
+                  <p className="text-sm mt-2 text-gray-600">
+                    Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}
+                  </p>
+                  <button
+                    className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                    onClick={() => handleAgregar(producto)}
+                  >
+                    Agregar al carrito
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </section>
 
@@ -125,22 +140,32 @@ export default function MenuPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-red-600">❌ Productos con Ingredientes Restringidos</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {restringidos.map((producto, index) => (
-                <div key={index} className="bg-red-100 p-5 rounded-xl shadow">
-                  <img
-                    src={`/images/${producto.nombre.toLowerCase().replace(/\s/g, '-')}.jpg`}
-                    alt={producto.nombre}
-                    className="w-full h-40 object-cover rounded-md mb-4"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/default.jpg'
-                    }}
-                  />
-                  <h2 className="text-xl font-semibold text-red-800">{producto.nombre}</h2>
-                  <p className="text-sm text-gray-500 capitalize">{producto.tipo}</p>
-                  <p className="text-sm text-red-700 font-medium mt-1">Contiene ingredientes restringidos</p>
-                  <p className="text-sm mt-2 text-gray-700">Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}</p>
-                </div>
-              ))}
+              {restringidos.map((producto) => {
+                const id = producto.id
+                const nombre = producto.nombre.toLowerCase().replace(/\s/g, '-')
+                const src = errorImagenes[id]
+                  ? '/images/default.jpg'
+                  : `/images/${nombre}.jpg`
+
+                return (
+                  <div key={id} className="bg-red-100 p-5 rounded-xl shadow">
+                    <Image
+                      src={src}
+                      alt={producto.nombre}
+                      width={400}
+                      height={160}
+                      className="object-cover rounded-md mb-4 w-full h-40"
+                      onError={() => handleImageError(id)}
+                    />
+                    <h2 className="text-xl font-semibold text-red-800">{producto.nombre}</h2>
+                    <p className="text-sm text-gray-500 capitalize">{producto.tipo}</p>
+                    <p className="text-sm text-red-700 font-medium mt-1">Contiene ingredientes restringidos</p>
+                    <p className="text-sm mt-2 text-gray-700">
+                      Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}
+                    </p>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}

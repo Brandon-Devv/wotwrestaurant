@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { Ingredient, Preferencia } from '@prisma/client'
 import { toast } from 'sonner'
 
-// ✅ Importa los componentes de UI correctamente
+// UI Components
 import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
@@ -15,25 +15,25 @@ export default function PreferenciasPage() {
   const [ingredientes, setIngredientes] = useState<Ingredient[]>([])
   const [intolerancias, setIntolerancias] = useState<Ingredient[]>([])
 
-  // Obtener ingredientes y preferencias del usuario
   useEffect(() => {
     if (!session?.user?.email) return
 
     fetch('/api/preferences')
       .then((res) => res.json())
       .then((data: { all: Ingredient[]; intolerancias: Preferencia[] }) => {
-        const intoleranciasSet = new Set(
-          data.intolerancias.map((pref) => pref.ingredienteId)
-        )
-        const soloIntolerancias = data.all.filter((ing) =>
-          intoleranciasSet.has(ing.id)
-        )
+        const intoleranciasSet = new Set(data.intolerancias.map((pref) => pref.ingredienteId))
+
+        const soloIntolerancias = data.all.filter((ing) => intoleranciasSet.has(ing.id))
+        const soloPreferencias = data.all.filter((ing) => !intoleranciasSet.has(ing.id))
+
         setIntolerancias(soloIntolerancias)
-        setIngredientes(data.all.filter((ing) => !intoleranciasSet.has(ing.id)))
+        setIngredientes(soloPreferencias)
+      })
+      .catch((err: unknown) => {
+        console.error('Error al obtener preferencias:', err)
       })
   }, [session])
 
-  // Mover ingrediente entre listas
   const mover = (id: string, hacia: 'intolerancias' | 'preferencias') => {
     if (hacia === 'intolerancias') {
       const ingrediente = ingredientes.find((i) => i.id === id)
@@ -57,9 +57,10 @@ export default function PreferenciasPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intolerancias: intolerancias.map((i) => i.id) }),
       })
+
       if (!res.ok) throw new Error('Error al actualizar preferencias')
       toast.success('Preferencias actualizadas correctamente')
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error('Error al actualizar intolerancias')
     }
   }
@@ -104,7 +105,10 @@ export default function PreferenciasPage() {
       </div>
 
       <div className="mt-6 flex justify-center">
-        <Button onClick={actualizar} className="px-6 py-2 text-white bg-green-600 hover:bg-green-700">
+        <Button
+          onClick={actualizar}
+          className="px-6 py-2 text-white bg-green-600 hover:bg-green-700"
+        >
           Guardar preferencias
         </Button>
       </div>

@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -37,10 +38,12 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img
+          <Image
             src="/images/logoblanco.jpg"
             alt="Logo"
-            className="h-20 w-20 rounded-full border border-gray-300 shadow"
+            width={80}
+            height={80}
+            className="rounded-full border border-gray-300 shadow"
           />
         </div>
 

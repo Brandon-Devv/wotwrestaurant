@@ -2,14 +2,26 @@
 
 import { useEffect, useState } from 'react'
 
+interface User {
+  id: string
+  name?: string
+  email: string
+  role: 'ADMIN' | 'CLIENT'
+  createdAt?: string
+}
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   const fetchUsers = async () => {
     const res = await fetch('/api/admin/users')
     const data = await res.json()
-    if (res.ok) setUsers(data)
-    else alert(data.error)
+
+    if (res.ok) {
+      setUsers(data as User[])
+    } else {
+      alert((data as { error: string }).error || 'Error al cargar usuarios')
+    }
   }
 
   const changeRole = async (id: string, newRole: 'ADMIN' | 'CLIENT') => {
@@ -18,6 +30,7 @@ export default function AdminUsersPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: id, role: newRole }),
     })
+
     if (res.ok) {
       fetchUsers()
     } else {
