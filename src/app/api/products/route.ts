@@ -2,39 +2,46 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
 
   const { searchParams } = new URL(request.url)
-  const tipo = searchParams.get('tipo')
+  const tipoParam = searchParams.get('tipo')
   const vegano = searchParams.get('vegano')
 
-  const tipoMap: Record<string, string> = {
+  const tipoMap = {
     'Almuerzo': 'ALMUERZO',
     'Cena': 'CENA',
-    'Comida Rápida': 'COMIDA_RAPIDA'
-  }
+    'Comida Rápida': 'COMIDA_RAPIDA',
+  } as const
 
-  const whereClause: any = {
+  const whereClause: Prisma.ProductWhereInput = {
     stock: {
-      gt: 0 // ✅ Solo productos con stock mayor a 0
-    }
+      gt: 0,
+    },
   }
 
-  if (tipo && tipoMap[tipo]) whereClause.tipo = tipoMap[tipo]
-  if (vegano === 'true') whereClause.vegano = true
-  else if (vegano === 'false') whereClause.vegano = false
+  if (tipoParam && tipoMap[tipoParam as keyof typeof tipoMap]) {
+    whereClause.tipo = tipoMap[tipoParam as keyof typeof tipoMap]
+  }
+
+  if (vegano === 'true') {
+    whereClause.vegano = true
+  } else if (vegano === 'false') {
+    whereClause.vegano = false
+  }
 
   const productos = await prisma.product.findMany({
     where: whereClause,
     include: {
       ingredientes: {
         include: {
-          ingrediente: true
-        }
-      }
-    }
+          ingrediente: true,
+        },
+      },
+    },
   })
 
   if (!session) {
@@ -46,10 +53,10 @@ export async function GET(request: Request) {
     include: {
       preferencias: {
         include: {
-          ingrediente: true
-        }
-      }
-    }
+          ingrediente: true,
+        },
+      },
+    },
   })
 
   if (!usuario) {
@@ -57,9 +64,11 @@ export async function GET(request: Request) {
   }
 
   const listaNegra = usuario.preferencias.map((p) => p.ingrediente.nombre)
+
   const preferidos = productos.filter((producto) =>
     producto.ingredientes.every((i) => !listaNegra.includes(i.ingrediente.nombre))
   )
+
   const restringidos = productos.filter((producto) =>
     producto.ingredientes.some((i) => listaNegra.includes(i.ingrediente.nombre))
   )

@@ -86,18 +86,16 @@ export default function IngredientsPage() {
             {editId ? 'Editar Ingrediente' : 'Agregar Ingrediente'}
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {(Object.keys(form) as (keyof Ingredient)[])
-              .filter(field => ['nombre', 'origen', 'tipoAlimento', 'proveedor', 'lote', 'registro'].includes(field))
-              .map((field) => (
-                <input
-                  key={field}
-                  name={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={form[field] as string || ''}
-                  onChange={handleChange}
-                  className="p-2 border border-gray-300 rounded"
-                />
-              ))}
+            {(['nombre', 'origen', 'tipoAlimento', 'proveedor', 'lote', 'registro'] as const).map((field) => (
+              <input
+                key={field}
+                name={field}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                value={typeof form[field] === 'string' ? form[field] : ''}
+                onChange={handleChange}
+                className="p-2 border border-gray-300 rounded"
+              />
+            ))}
 
             <input
               type="date"
@@ -117,7 +115,7 @@ export default function IngredientsPage() {
               <input
                 type="checkbox"
                 name="aptoVegano"
-                checked={form.aptoVegano || false}
+                checked={form.aptoVegano ?? false}
                 onChange={handleChange}
                 className="mr-2"
               />

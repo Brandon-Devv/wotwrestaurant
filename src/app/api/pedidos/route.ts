@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     }
 
     for (const item of items) {
+      // Validación explícita por seguridad
       if (
         typeof item.id !== 'string' ||
         typeof item.cantidad !== 'number' ||
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
         total,
         fecha: new Date(),
         items: {
-          create: items.map((item) => ({
+          create: items.map((item: PedidoItem) => ({
             productoId: item.id,
             cantidad: item.cantidad,
             subtotal: item.subtotal,

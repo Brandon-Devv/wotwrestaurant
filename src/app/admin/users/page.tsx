@@ -12,29 +12,38 @@ interface User {
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])
+  const [error, setError] = useState<string>('')
 
   const fetchUsers = async () => {
-    const res = await fetch('/api/admin/users')
-    const data = await res.json()
+    try {
+      const res = await fetch('/api/admin/users')
+      const data: User[] | { error: string } = await res.json()
 
-    if (res.ok) {
-      setUsers(data as User[])
-    } else {
-      alert((data as { error: string }).error || 'Error al cargar usuarios')
+      if (!res.ok || 'error' in data) {
+        setError('error' in data ? data.error : 'Error al cargar usuarios')
+      } else {
+        setUsers(data)
+      }
+    } catch (err) {
+      setError('Error inesperado al obtener usuarios')
     }
   }
 
   const changeRole = async (id: string, newRole: 'ADMIN' | 'CLIENT') => {
-    const res = await fetch('/api/admin/users', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: id, role: newRole }),
-    })
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id, role: newRole }),
+      })
 
-    if (res.ok) {
-      fetchUsers()
-    } else {
-      alert('Error al actualizar rol')
+      if (res.ok) {
+        fetchUsers()
+      } else {
+        alert('Error al actualizar rol')
+      }
+    } catch {
+      alert('Error de red al actualizar rol')
     }
   }
 
@@ -45,6 +54,10 @@ export default function AdminUsersPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center">👥 Gestión de Usuarios</h1>
+
+      {error && (
+        <p className="text-center text-red-600 font-medium mb-4">{error}</p>
+      )}
 
       <div className="bg-white rounded shadow border p-4 overflow-auto">
         <table className="w-full table-auto text-left">

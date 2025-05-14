@@ -5,6 +5,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import axios, { AxiosError } from 'axios'
 
+interface ChangePasswordResponse {
+  error?: string
+}
+
 export default function MiCuentaPage() {
   const { data: session } = useSession()
   const name = session?.user?.name ?? ''
@@ -47,13 +51,10 @@ export default function MiCuentaPage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ error: string }>
-      if (err.response?.data?.error) {
-        setMessage(err.response.data.error)
-      } else {
-        setMessage('Error al cambiar la contraseña ❌')
-      }
+    } catch (error) {
+      const err = error as AxiosError<ChangePasswordResponse>
+      const mensaje = err.response?.data?.error ?? 'Error al cambiar la contraseña ❌'
+      setMessage(mensaje)
     }
   }
 

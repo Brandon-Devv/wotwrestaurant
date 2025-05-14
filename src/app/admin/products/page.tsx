@@ -75,23 +75,25 @@ export default function AdminProductsPage() {
       <h1 className="text-3xl font-bold mb-6 text-center">🛠️ Administración de Productos</h1>
       <div className="grid grid-cols-1 gap-6">
         {productos.map(producto => {
-          const imageUrl = errorImages[producto.id]
+          const imageName = producto.nombre.toLowerCase().replace(/\s/g, '-')
+          const imagePath = errorImages[producto.id]
             ? '/images/default.jpg'
-            : `/images/${producto.nombre.toLowerCase().replace(/\s/g, '-')}.jpg`
+            : `/images/${imageName}.jpg`
 
           return (
             <div
               key={producto.id}
               className="flex items-center gap-6 p-4 rounded shadow bg-white border border-gray-200"
             >
-              <Image
-                src={imageUrl}
-                alt={producto.nombre}
-                width={128}
-                height={128}
-                className="object-cover rounded"
-                onError={() => handleImageError(producto.id)}
-              />
+              <div className="relative w-32 h-32">
+                <Image
+                  src={imagePath}
+                  alt={producto.nombre}
+                  fill
+                  className="object-cover rounded"
+                  onError={() => handleImageError(producto.id)}
+                />
+              </div>
 
               <div className="flex-1 space-y-2">
                 <h2 className="text-xl font-semibold">{producto.nombre}</h2>
