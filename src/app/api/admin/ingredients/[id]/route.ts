@@ -3,19 +3,23 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// ✅ Firma compatible con App Router (usa destructuring y tipado válido)
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
+export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (session?.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
+  const url = req.nextUrl
+  const id = url.pathname.split('/').pop()  // Extrae el ID desde la ruta
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID no proporcionado' }, { status: 400 })
+  }
+
   const body = await req.json()
+
   const updated = await prisma.ingredient.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nombre: body.nombre,
       aptoVegano: body.aptoVegano,
@@ -32,21 +36,23 @@ export async function PUT(
   return NextResponse.json(updated)
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Record<string, string> }
-) {
+export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (session?.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const ingredienteId = params.id
+  const url = req.nextUrl
+  const id = url.pathname.split('/').pop()  // Extrae el ID desde la ruta
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID no proporcionado' }, { status: 400 })
+  }
 
   try {
-    await prisma.preferencia.deleteMany({ where: { ingredienteId } })
-    await prisma.productIngredient.deleteMany({ where: { ingredienteId } })
-    await prisma.ingredient.delete({ where: { id: ingredienteId } })
+    await prisma.preferencia.deleteMany({ where: { ingredienteId: id } })
+    await prisma.productIngredient.deleteMany({ where: { ingredienteId: id } })
+    await prisma.ingredient.delete({ where: { id } })
 
     return NextResponse.json({ message: 'Ingrediente eliminado' })
   } catch (error) {
