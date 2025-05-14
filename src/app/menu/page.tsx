@@ -6,17 +6,33 @@ import { useEffect, useState } from 'react'
 import { usePersistentCart } from '@/lib/hooks/usePersistentCart'
 import Image from 'next/image'
 
+interface Ingrediente {
+  id: string
+  nombre: string
+}
+
+interface IngredienteProducto {
+  ingrediente: Ingrediente
+}
+
+interface Producto {
+  id: string
+  nombre: string
+  precio: number
+  vegano: boolean
+  tipo: string
+  ingredientes: IngredienteProducto[]
+}
+
 export default function MenuPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const { addToCart } = usePersistentCart()
 
-  const [preferidos, setPreferidos] = useState<any[]>([])
-  const [restringidos, setRestringidos] = useState<any[]>([])
+  const [preferidos, setPreferidos] = useState<Producto[]>([])
+  const [restringidos, setRestringidos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
-
   const [errorImagenes, setErrorImagenes] = useState<Record<string, boolean>>({})
-
   const [filtro, setFiltro] = useState<'todos' | 'vegano' | 'no_vegano'>('todos')
   const [tipo, setTipo] = useState<'todos' | 'Almuerzo' | 'Cena' | 'Comida Rápida'>('todos')
 
@@ -39,8 +55,12 @@ export default function MenuPage() {
         const data = await res.json()
         setPreferidos(data.preferidos || [])
         setRestringidos(data.restringidos || [])
-      } catch (error: any) {
-        console.error('Error al obtener productos:', error.message)
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('Error al obtener productos:', error.message)
+        } else {
+          console.error('Error desconocido al obtener productos')
+        }
       } finally {
         setLoading(false)
       }
@@ -49,7 +69,7 @@ export default function MenuPage() {
     fetchData()
   }, [filtro, tipo, session])
 
-  const handleAgregar = (producto: any) => {
+  const handleAgregar = (producto: Producto) => {
     if (!session) {
       router.push('/login')
     } else {
@@ -73,7 +93,7 @@ export default function MenuPage() {
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 bg-green-50 p-4 rounded-xl shadow-inner">
           <select
-            onChange={(e) => setFiltro(e.target.value as any)}
+            onChange={(e) => setFiltro(e.target.value as 'todos' | 'vegano' | 'no_vegano')}
             className="border border-green-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-green-500"
             value={filtro}
           >
@@ -83,7 +103,7 @@ export default function MenuPage() {
           </select>
 
           <select
-            onChange={(e) => setTipo(e.target.value as any)}
+            onChange={(e) => setTipo(e.target.value as 'todos' | 'Almuerzo' | 'Cena' | 'Comida Rápida')}
             className="border border-green-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-green-500"
             value={tipo}
           >
@@ -121,7 +141,7 @@ export default function MenuPage() {
                     ${producto.precio?.toLocaleString() || 'N/A'}
                   </p>
                   <p className="text-sm mt-2 text-gray-600">
-                    Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}
+                    Ingredientes: {producto.ingredientes.map((i) => i.ingrediente.nombre).join(', ')}
                   </p>
                   <button
                     className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
@@ -161,7 +181,7 @@ export default function MenuPage() {
                     <p className="text-sm text-gray-500 capitalize">{producto.tipo}</p>
                     <p className="text-sm text-red-700 font-medium mt-1">Contiene ingredientes restringidos</p>
                     <p className="text-sm mt-2 text-gray-700">
-                      Ingredientes: {producto.ingredientes.map((i: any) => i.ingrediente.nombre).join(', ')}
+                      Ingredientes: {producto.ingredientes.map((i) => i.ingrediente.nombre).join(', ')}
                     </p>
                   </div>
                 )

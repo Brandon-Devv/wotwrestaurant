@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface Ingredient {
   id: string
@@ -20,7 +19,6 @@ export default function IngredientsPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [form, setForm] = useState<Partial<Ingredient>>({})
   const [editId, setEditId] = useState<string | null>(null)
-  const router = useRouter()
 
   const fetchIngredientes = async () => {
     const res = await fetch('/api/admin/ingredients')

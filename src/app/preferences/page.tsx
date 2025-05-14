@@ -60,7 +60,7 @@ export default function PreferenciasPage() {
 
       if (!res.ok) throw new Error('Error al actualizar preferencias')
       toast.success('Preferencias actualizadas correctamente')
-    } catch (error: unknown) {
+    } catch {
       toast.error('Error al actualizar intolerancias')
     }
   }

@@ -25,6 +25,7 @@ export default function AdminUsersPage() {
         setUsers(data)
       }
     } catch (err) {
+      console.error('Error en fetchUsers:', err)
       setError('Error inesperado al obtener usuarios')
     }
   }
@@ -42,7 +43,8 @@ export default function AdminUsersPage() {
       } else {
         alert('Error al actualizar rol')
       }
-    } catch {
+    } catch (err) {
+      console.error('Error de red al actualizar rol:', err)
       alert('Error de red al actualizar rol')
     }
   }

@@ -1,9 +1,7 @@
-// ✅ src/lib/hooks/usePersistentCart.ts
-
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface CarritoItem {
   id: string
@@ -20,7 +18,7 @@ export function usePersistentCart() {
   const [items, setItems] = useState<CarritoItem[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     if (!session?.user?.email) return
     setLoading(true)
     try {
@@ -34,25 +32,26 @@ export function usePersistentCart() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [session?.user?.email])
 
   const addToCart = async (productoId: string, precioUnitario: number) => {
-  try {
-    const res = await fetch('/api/cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productoId, cantidad: 1, precioUnitario }),
-    })
-    if (res.ok) {
-      const updated = await res.json()
-      setItems(updated)
-    } else {
-      console.error('Error al agregar producto al carrito')
+    try {
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productoId, cantidad: 1, precioUnitario }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setItems(updated)
+      } else {
+        console.error('Error al agregar producto al carrito')
+      }
+    } catch (error) {
+      console.error('Error al agregar al carrito:', error)
     }
-  } catch (error) {
-    console.error('Error al agregar al carrito:', error)
   }
-  }
+
   const removeFromCart = async (productoId: string) => {
     try {
       const res = await fetch(`/api/cart/${productoId}`, {
@@ -113,20 +112,31 @@ export function usePersistentCart() {
       console.error('Error al procesar el pedido:', error)
     }
   }
+
   const clearCart = async () => {
-  if (!session?.user?.email) return
-  try {
-    await fetch(`/api/cart`, {
-      method: 'DELETE',
-    })
-    setItems([])
-  } catch (error) {
-    console.error('Error al limpiar el carrito:', error)
+    if (!session?.user?.email) return
+    try {
+      await fetch(`/api/cart`, {
+        method: 'DELETE',
+      })
+      setItems([])
+    } catch (error) {
+      console.error('Error al limpiar el carrito:', error)
+    }
   }
- }
+
   useEffect(() => {
     fetchCart()
-  }, [session])
+  }, [fetchCart]) // ✅ Ahora es seguro y correcto
 
-  return {items, loading, addToCart, removeFromCart, updateQuantity, clearCart, total, checkout}
+  return {
+    items,
+    loading,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    total,
+    checkout,
+  }
 }
