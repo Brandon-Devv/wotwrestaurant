@@ -3,10 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// ✅ CORRECTA FIRMA PARA APP ROUTER
+// ✅ Firma compatible con App Router (usa destructuring y tipado válido)
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   const session = await getServerSession(authOptions)
   if (session?.user.role !== 'ADMIN') {
@@ -15,7 +15,7 @@ export async function PUT(
 
   const body = await req.json()
   const updated = await prisma.ingredient.update({
-    where: { id: context.params.id },
+    where: { id: params.id },
     data: {
       nombre: body.nombre,
       aptoVegano: body.aptoVegano,
@@ -34,14 +34,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ) {
   const session = await getServerSession(authOptions)
   if (session?.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const ingredienteId = context.params.id
+  const ingredienteId = params.id
 
   try {
     await prisma.preferencia.deleteMany({ where: { ingredienteId } })
