@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-// GET - Obtener preferencias e intolerancias
 export async function GET() {
   const session = await getServerSession(authOptions)
 
@@ -24,18 +23,19 @@ export async function GET() {
     return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
   }
 
-  if (user.role === 'ADMIN') {
-    return NextResponse.json({ preferencias: [], intolerancias: [] })
-  }
+  // Extraer los ingredientes intolerantes
+  const intolerancias = user.preferencias.map((p) => p.ingrediente)
+  const intoleranciaIds = new Set(intolerancias.map((i) => i.id))
 
-  const ingredientes = await prisma.ingredient.findMany()
-  const intolerancias = user.preferencias.map((p) => p.ingrediente.nombre)
-  const preferencias = ingredientes.filter((i) => !intolerancias.includes(i.nombre))
+  // Obtener todos los ingredientes
+  const todosLosIngredientes = await prisma.ingredient.findMany()
+
+  // Filtrar los que NO están en la lista de intolerancias
+  const preferencias = todosLosIngredientes.filter((i) => !intoleranciaIds.has(i.id))
 
   return NextResponse.json({ preferencias, intolerancias })
 }
 
-// POST - Guardar intolerancias alimentarias
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
 
@@ -48,10 +48,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
   }
 
-  if (user.role === 'ADMIN') {
-    return NextResponse.json({ error: 'Los administradores no tienen preferencias' }, { status: 403 })
-  }
-
   const { intolerancias }: { intolerancias: string[] } = await req.json()
 
   if (!Array.isArray(intolerancias)) {
@@ -60,16 +56,12 @@ export async function POST(req: Request) {
 
   await prisma.preferencia.deleteMany({ where: { userId: user.id } })
 
-  const ingredientes = await prisma.ingredient.findMany({
-    where: { nombre: { in: intolerancias } },
-  })
-
-  const nuevaLista = ingredientes.map((i) => ({
+  const nuevas = intolerancias.map((ingredienteId) => ({
     userId: user.id,
-    ingredienteId: i.id,
+    ingredienteId,
   }))
 
-  await prisma.preferencia.createMany({ data: nuevaLista })
+  await prisma.preferencia.createMany({ data: nuevas })
 
   return NextResponse.json({ ok: true })
 }

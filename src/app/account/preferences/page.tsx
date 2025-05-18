@@ -16,10 +16,11 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import axios from 'axios'
 
 interface Ingrediente {
+  id: string
   nombre: string
 }
 
-function SortableItem({ id }: { id: string }) {
+function SortableItem({ id, label }: { id: string, label: string }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -34,15 +35,15 @@ function SortableItem({ id }: { id: string }) {
       {...attributes}
       {...listeners}
     >
-      {id}
+      {label}
     </li>
   )
 }
 
 export default function PreferencesPage() {
-  const [preferencias, setPreferencias] = useState<string[]>([])
-  const [intolerancias, setIntolerancias] = useState<string[]>([])
-  const [ingredientesIniciales, setIngredientesIniciales] = useState<string[]>([])
+  const [preferencias, setPreferencias] = useState<Ingrediente[]>([])
+  const [intolerancias, setIntolerancias] = useState<Ingrediente[]>([])
+  const [ingredientesIniciales, setIngredientesIniciales] = useState<Ingrediente[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -52,10 +53,10 @@ export default function PreferencesPage() {
         const preferenciasData: Ingrediente[] = res.data.preferencias || []
         const intoleranciasData: Ingrediente[] = res.data.intolerancias || []
 
-        const all: string[] = [...preferenciasData, ...intoleranciasData].map((i) => i.nombre)
+        const all: Ingrediente[] = [...preferenciasData, ...intoleranciasData]
         setIngredientesIniciales(all)
-        setPreferencias(preferenciasData.map((i) => i.nombre))
-        setIntolerancias(intoleranciasData.map((i) => i.nombre))
+        setPreferencias(preferenciasData)
+        setIntolerancias(intoleranciasData)
       } catch (error: unknown) {
         console.error('Error al obtener preferencias:', error)
       } finally {
@@ -72,18 +73,23 @@ export default function PreferencesPage() {
 
     const id = String(active.id)
 
-    if (preferencias.includes(id)) {
-      setPreferencias((prev) => prev.filter((i) => i !== id))
-      setIntolerancias((prev) => [...prev, id])
-    } else if (intolerancias.includes(id)) {
-      setIntolerancias((prev) => prev.filter((i) => i !== id))
-      setPreferencias((prev) => [...prev, id])
+    const movedItem = preferencias.find((i) => i.nombre === id)
+      || intolerancias.find((i) => i.nombre === id)
+
+    if (!movedItem) return
+
+    if (preferencias.some(i => i.id === movedItem.id)) {
+      setPreferencias((prev) => prev.filter((i) => i.id !== movedItem.id))
+      setIntolerancias((prev) => [...prev, movedItem])
+    } else if (intolerancias.some(i => i.id === movedItem.id)) {
+      setIntolerancias((prev) => prev.filter((i) => i.id !== movedItem.id))
+      setPreferencias((prev) => [...prev, movedItem])
     }
   }
 
   async function handleGuardar() {
     try {
-      await axios.post('/api/preferences', { intolerancias })
+      await axios.post('/api/preferences', { intolerancias: intolerancias.map(i => i.id) })
       alert('Preferencias actualizadas correctamente.')
     } catch {
       alert('Error al guardar preferencias.')
@@ -91,8 +97,10 @@ export default function PreferencesPage() {
   }
 
   function handleReset() {
+    const idsIntolerancias = intolerancias.map(i => i.id)
+    const nuevasPreferencias = ingredientesIniciales.filter(i => !idsIntolerancias.includes(i.id))
+    setPreferencias(nuevasPreferencias)
     setIntolerancias([])
-    setPreferencias([...ingredientesIniciales])
   }
 
   if (loading) return <p className="text-center mt-10">Cargando preferencias...</p>
@@ -118,10 +126,10 @@ export default function PreferencesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
-              <SortableContext items={preferencias} strategy={verticalListSortingStrategy}>
+              <SortableContext items={preferencias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {preferencias.map((item: string) => (
-                    <SortableItem key={item} id={item} />
+                  {preferencias.map((item) => (
+                    <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
                   ))}
                 </ul>
               </SortableContext>
@@ -129,10 +137,10 @@ export default function PreferencesPage() {
 
             <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
-              <SortableContext items={intolerancias} strategy={verticalListSortingStrategy}>
+              <SortableContext items={intolerancias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {intolerancias.map((item: string) => (
-                    <SortableItem key={item} id={item} />
+                  {intolerancias.map((item) => (
+                    <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
                   ))}
                 </ul>
               </SortableContext>

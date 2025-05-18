@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Ingredient, Preferencia } from '@prisma/client'
+import { Ingredient } from '@prisma/client'
 import { toast } from 'sonner'
-
-// UI Components
 import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
@@ -20,14 +18,9 @@ export default function PreferenciasPage() {
 
     fetch('/api/preferences')
       .then((res) => res.json())
-      .then((data: { all: Ingredient[]; intolerancias: Preferencia[] }) => {
-        const intoleranciasSet = new Set(data.intolerancias.map((pref) => pref.ingredienteId))
-
-        const soloIntolerancias = data.all.filter((ing) => intoleranciasSet.has(ing.id))
-        const soloPreferencias = data.all.filter((ing) => !intoleranciasSet.has(ing.id))
-
-        setIntolerancias(soloIntolerancias)
-        setIngredientes(soloPreferencias)
+      .then((data: { preferencias: Ingredient[]; intolerancias: Ingredient[] }) => {
+        setIngredientes(data.preferencias)
+        setIntolerancias(data.intolerancias)
       })
       .catch((err: unknown) => {
         console.error('Error al obtener preferencias:', err)
@@ -73,7 +66,7 @@ export default function PreferenciasPage() {
           <CardContent className="p-4">
             <h2 className="text-xl font-semibold mb-2">✅ Preferencias (por defecto)</h2>
             <ScrollArea className="h-72 pr-2">
-              {ingredientes.map((ing) => (
+              {ingredientes.length > 0 ? ingredientes.map((ing) => (
                 <div
                   key={ing.id}
                   className="cursor-pointer p-2 border rounded mb-1 hover:bg-green-100 transition"
@@ -81,7 +74,7 @@ export default function PreferenciasPage() {
                 >
                   {ing.nombre}
                 </div>
-              ))}
+              )) : <p className="text-gray-500 text-sm text-center">No hay ingredientes disponibles</p>}
             </ScrollArea>
           </CardContent>
         </Card>
@@ -90,7 +83,7 @@ export default function PreferenciasPage() {
           <CardContent className="p-4">
             <h2 className="text-xl font-semibold mb-2">🚫 Intolerancias</h2>
             <ScrollArea className="h-72 pr-2">
-              {intolerancias.map((ing) => (
+              {intolerancias.length > 0 ? intolerancias.map((ing) => (
                 <div
                   key={ing.id}
                   className="cursor-pointer p-2 border rounded mb-1 hover:bg-red-100 transition"
@@ -98,7 +91,7 @@ export default function PreferenciasPage() {
                 >
                   {ing.nombre}
                 </div>
-              ))}
+              )) : <p className="text-gray-500 text-sm text-center">No hay ingredientes seleccionados</p>}
             </ScrollArea>
           </CardContent>
         </Card>

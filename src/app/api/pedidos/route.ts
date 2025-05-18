@@ -1,3 +1,5 @@
+// ✅ Reemplaza todo el contenido con esta versión compatible con Vercel
+
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -44,7 +46,6 @@ export async function POST(req: Request) {
     }
 
     for (const item of items) {
-      // Validación explícita por seguridad
       if (
         typeof item.id !== 'string' ||
         typeof item.cantidad !== 'number' ||
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       if (!producto || producto.stock < item.cantidad) {
         return NextResponse.json(
           {
-            error: `Stock insuficiente para el producto "${item.nombre || 'desconocido'}"`,
+            error: `Stock insuficiente para el producto "${producto?.nombre || item.nombre || 'desconocido'}"`,
           },
           { status: 400 }
         )
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
       },
     })
 
+    // ✅ Disminuir stock
     for (const item of items) {
       await prisma.product.update({
         where: { id: item.id },
@@ -92,6 +94,13 @@ export async function POST(req: Request) {
         },
       })
     }
+
+    // ✅ Limpiar carrito
+    await prisma.carrito.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    })
 
     return NextResponse.json({ ok: true, pedidoId: pedido.id })
   } catch (error: unknown) {
