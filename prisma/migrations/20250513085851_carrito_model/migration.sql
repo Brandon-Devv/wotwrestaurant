@@ -1,0 +1,1 @@
+-- Esta migración fue marcada como aplicada manualmente

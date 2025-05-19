@@ -12,12 +12,14 @@ model User {
   email        String        @unique
   password     String
   name         String
+  phone        String        @default("") 
   role         Role          @default(CLIENT)
   createdAt    DateTime      @default(now())
   pedidos      Pedido[]
   preferencias Preferencia[]
   carrito      Carrito[]
 }
+
 
 model Product {
   id           String              @id @default(uuid())

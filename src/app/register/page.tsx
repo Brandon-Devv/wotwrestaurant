@@ -2,29 +2,24 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import bcrypt from 'bcryptjs'
 import Image from 'next/image'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
   const router = useRouter()
 
   const validatePassword = (pass: string) => {
-    const policy =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-])[A-Za-z\d@$!%*?&_\-]{8,}$/
+    const policy = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-])[A-Za-z\d@$!%*?&_\-]{8,}$/
     return policy.test(pass)
   }
 
-  const validateName = (name: string) => {
-    return /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,35}$/.test(name)
-  }
-
-  const validateEmail = (email: string) => {
-    return email.length <= 35
-  }
+  const validateName = (name: string) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,35}$/.test(name)
+  const validateEmail = (email: string) => email.length <= 35
+  const validatePhone = (phone: string) => /^\+?[0-9]{7,15}$/.test(phone)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,23 +34,25 @@ export default function RegisterPage() {
       return
     }
 
+    if (!validatePhone(phone)) {
+      setError('El número de teléfono debe ser válido. Usa el formato internacional. Ej: +573001234567')
+      return
+    }
+
     if (!validatePassword(password)) {
-      setError(
-        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.'
-      )
+      setError('La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.')
       return
     }
 
     try {
-      const hashedPassword = await bcrypt.hash(password, 10)
-
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           name,
-          password: hashedPassword,
+          password, // ✅ ENVIAR LA CONTRASEÑA EN TEXTO PLANO
+          phone,
         }),
       })
 
@@ -74,7 +71,6 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white">
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in border border-green-100">
-        {/* Logo corregido */}
         <div className="flex justify-center mb-6">
           <Image
             src="/images/logoblanco.jpg"
@@ -85,9 +81,7 @@ export default function RegisterPage() {
           />
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-green-700 mb-6">
-          Crear cuenta
-        </h1>
+        <h1 className="text-3xl font-bold text-center text-green-700 mb-6">Crear cuenta</h1>
 
         <form onSubmit={handleRegister} className="flex flex-col space-y-4">
           <input
@@ -105,6 +99,14 @@ export default function RegisterPage() {
             value={email}
             maxLength={35}
             onChange={(e) => setEmail(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+            required
+          />
+          <input
+            type="tel"
+            placeholder="Número de teléfono (Ej: +573001234567)"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
             required
           />

@@ -1,13 +1,25 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { hash } from 'bcryptjs'
+import { sendEmail } from '@/lib/mailer'
 
 export async function POST(request: Request) {
   try {
-    const { email, name, password } = await request.json()
+    const { email, name, password, phone } = await request.json()
 
-    if (!email || !name || !password) {
+    if (!email || !name || !password || !phone) {
       return NextResponse.json(
         { error: 'Faltan campos requeridos' },
+        { status: 400 }
+      )
+    }
+
+    const phoneRegex = /^\+?[0-9]{7,15}$/
+    if (!phoneRegex.test(phone)) {
+      return NextResponse.json(
+        {
+          error: 'Formato de teléfono inválido. Usa el formato internacional. Ej: +573001234567',
+        },
         { status: 400 }
       )
     }
@@ -20,13 +32,41 @@ export async function POST(request: Request) {
       )
     }
 
+    const hashedPassword = await hash(password, 10)
+
     const user = await prisma.user.create({
       data: {
         email,
         name,
-        password,
+        password: hashedPassword,
+        phone,
         role: 'CLIENT',
       },
+    })
+
+    // ✅ Enviar correo sin bloquear la respuesta
+    setImmediate(async () => {
+      try {
+        console.log('Intentando enviar correo a:', email)
+
+        await sendEmail({
+          to: email,
+          subject: 'Bienvenido a Wonders Of The World Bogotá',
+          html: `
+            <p><strong>Hola ${name},</strong></p>
+            <p>Gracias por registrarte en <strong>Wonders Of The World Bogotá</strong>.</p>
+            <p>Ya puedes iniciar sesión, navegar nuestro menú y hacer tus pedidos.</p>
+            <p><strong>Teléfono registrado:</strong> ${phone}</p>
+            <br/>
+            <p>¡Te esperamos!</p>
+          `,
+        })
+
+
+        console.log('✅ Correo enviado a', email)
+      } catch (correoError) {
+        console.error('Error al enviar correo:', correoError)
+      }
     })
 
     return NextResponse.json({ user }, { status: 201 })
