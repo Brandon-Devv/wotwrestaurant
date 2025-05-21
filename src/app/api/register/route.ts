@@ -44,34 +44,30 @@ export async function POST(request: Request) {
       },
     })
 
-    // ✅ Enviar correo sin bloquear la respuesta
-    setImmediate(async () => {
-      try {
-        console.log('Intentando enviar correo a:', email)
+    try {
+      console.log('📩 Intentando enviar correo a:', email)
 
-        await sendEmail({
-          to: email,
-          subject: 'Bienvenido a Wonders Of The World Bogotá',
-          html: `
-            <p><strong>Hola ${name},</strong></p>
-            <p>Gracias por registrarte en <strong>Wonders Of The World Bogotá</strong>.</p>
-            <p>Ya puedes iniciar sesión, navegar nuestro menú y hacer tus pedidos.</p>
-            <p><strong>Teléfono registrado:</strong> ${phone}</p>
-            <br/>
-            <p>¡Te esperamos!</p>
-          `,
-        })
+      await sendEmail({
+        to: email,
+        subject: '🎉 Bienvenido a Wonders Of The World Bogotá',
+        html: `
+          <h2>¡Hola ${name}!</h2>
+          <p>Gracias por registrarte en <strong>Wonders Of The World Bogotá</strong>.</p>
+          <p>Ya puedes iniciar sesión, navegar nuestro menú y hacer tus pedidos.</p>
+          <p><strong>Teléfono registrado:</strong> ${phone}</p>
+          <br/>
+          <p>🍽️ ¡Te esperamos!</p>
+        `,
+      })
 
-
-        console.log('✅ Correo enviado a', email)
-      } catch (correoError) {
-        console.error('Error al enviar correo:', correoError)
-      }
-    })
+      console.log('✅ Correo enviado exitosamente a:', email)
+    } catch (correoError) {
+      console.error('❌ Error al enviar correo de bienvenida:', correoError)
+    }
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (error) {
-    console.error('Error en el registro:', error)
+    console.error('❌ Error en el registro:', error)
     return NextResponse.json(
       { error: 'Ocurrió un error inesperado en el servidor' },
       { status: 500 }

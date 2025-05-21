@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const router = useRouter()
 
   const validatePassword = (pass: string) => {
@@ -48,19 +49,15 @@ export default function RegisterPage() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          name,
-          password, // ✅ ENVIAR LA CONTRASEÑA EN TEXTO PLANO
-          phone,
-        }),
+        body: JSON.stringify({ email, name, password, phone }),
       })
 
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Error en el registro')
       } else {
-        router.push('/login')
+        setShowSuccessModal(true)
+        setTimeout(() => router.push('/login'), 3000)
       }
     } catch (e) {
       console.error(e)
@@ -69,77 +66,88 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in border border-green-100">
-        <div className="flex justify-center mb-6">
-          <Image
-            src="/images/logoblanco.jpg"
-            alt="Logo"
-            width={80}
-            height={80}
-            className="rounded-full border border-gray-300 shadow"
-          />
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in border border-green-100">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/images/logoblanco.jpg"
+              alt="Logo"
+              width={80}
+              height={80}
+              className="rounded-full border border-gray-300 shadow"
+            />
+          </div>
+
+          <h1 className="text-3xl font-bold text-center text-green-700 mb-6">Crear cuenta</h1>
+
+          <form onSubmit={handleRegister} className="flex flex-col space-y-4">
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={name}
+              maxLength={35}
+              onChange={(e) => setName(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              maxLength={35}
+              onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Número de teléfono (Ej: +573001234567)"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              required
+              minLength={8}
+              maxLength={64}
+            />
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            <button
+              type="submit"
+              className="bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition duration-300 shadow-md"
+            >
+              Registrarse
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            ¿Ya tienes una cuenta?{' '}
+            <span
+              onClick={() => router.push('/login')}
+              className="text-green-700 font-medium cursor-pointer hover:underline"
+            >
+              Inicia sesión aquí
+            </span>
+          </p>
         </div>
-
-        <h1 className="text-3xl font-bold text-center text-green-700 mb-6">Crear cuenta</h1>
-
-        <form onSubmit={handleRegister} className="flex flex-col space-y-4">
-          <input
-            type="text"
-            placeholder="Nombre completo"
-            value={name}
-            maxLength={35}
-            onChange={(e) => setName(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            maxLength={35}
-            onChange={(e) => setEmail(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-            required
-          />
-          <input
-            type="tel"
-            placeholder="Número de teléfono (Ej: +573001234567)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-            required
-            minLength={8}
-            maxLength={64}
-          />
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          <button
-            type="submit"
-            className="bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition duration-300 shadow-md"
-          >
-            Registrarse
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          ¿Ya tienes una cuenta?{' '}
-          <span
-            onClick={() => router.push('/login')}
-            className="text-green-700 font-medium cursor-pointer hover:underline"
-          >
-            Inicia sesión aquí
-          </span>
-        </p>
       </div>
-    </div>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm text-center">
+            <h2 className="text-xl font-semibold text-green-700 mb-2">✅ Registro exitoso</h2>
+            <p className="text-gray-700">Serás redirigido al inicio de sesión en unos segundos...</p>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
