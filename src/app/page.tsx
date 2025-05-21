@@ -32,8 +32,9 @@ export default function HomePage() {
         <div className="bg-white bg-opacity-90 text-gray-900 max-w-3xl rounded-xl p-8 shadow-xl text-center mb-10 animate-slide-up">
           <h2 className="text-2xl font-semibold mb-4">¿Quiénes somos?</h2>
           <p className="mb-6">
-            Somos un restaurante en Bogotá con sabores de Inglaterra. Ofrecemos menús veganos y no veganos preparados con trazabilidad total de ingredientes.
+            Wonders Of The World Bogotá es un restaurante innovador ubicado en la Calle 123 #45-67, especializado en cocina británica con opciones veganas y no veganas. Nuestro sistema permite a cada cliente personalizar su experiencia alimentaria mediante la configuración de preferencias e intolerancias, filtrando automáticamente los platos que contienen ingredientes no deseados. Gracias a un modelo de trazabilidad integral, garantizamos transparencia en la composición de cada plato, adaptándonos a las necesidades, gustos y restricciones de cada comensal.
           </p>
+
 
           {session?.user ? (
             <button
@@ -66,7 +67,7 @@ export default function HomePage() {
           <p className="mb-4">Calle 123 #45-67, Bogotá D.C., Colombia</p>
 
           <h3 className="text-xl font-semibold mb-2">📞 Contáctanos</h3>
-          <p className="mb-1">Email: contacto@wotw.com</p>
+          <p className="mb-1">Email: wotwrestaurantbog@gmail.com</p>
           <p>Teléfono: +57 3194556973</p>
         </div>
       </div>
