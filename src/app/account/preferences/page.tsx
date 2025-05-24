@@ -43,7 +43,8 @@ function SortableItem({ id, label }: { id: string; label: string }) {
 }
 
 export default function PreferencesPage() {
-  const { data: session, status } = useSession()
+  const sessionData = useSession()
+  const status = sessionData.status
   const router = useRouter()
 
   const [preferencias, setPreferencias] = useState<Ingrediente[]>([])
@@ -114,7 +115,11 @@ export default function PreferencesPage() {
     setIntolerancias([])
   }
 
-  if (status === 'loading' || loading) return <p className="text-center mt-10">Cargando preferencias...</p>
+  if (status === 'loading' || loading) {
+    return <p className="text-center mt-10">Cargando preferencias...</p>
+  }
+
+  if (status !== 'authenticated') return null
 
   return (
     <main
