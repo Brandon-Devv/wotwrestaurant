@@ -1,7 +1,8 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import axios, { AxiosError } from 'axios'
 
@@ -10,14 +11,29 @@ interface ChangePasswordResponse {
 }
 
 export default function MiCuentaPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
   const name = session?.user?.name ?? ''
   const email = session?.user?.email ?? ''
+  const phone = session?.user?.phone ?? '' 
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return <div className="p-6 text-center">Cargando sesión...</div>
+  }
+
+  if (!session) return null
 
   const validatePassword = (password: string) => {
     const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
@@ -71,6 +87,7 @@ export default function MiCuentaPage() {
           <h2 className="text-xl font-semibold mb-2 text-gray-800">📋 Información personal</h2>
           <p><strong>Nombre:</strong> {name}</p>
           <p><strong>Correo:</strong> {email}</p>
+          <p><strong>Teléfono:</strong> {phone}</p>
         </section>
 
         {/* Cambio de contraseña */}

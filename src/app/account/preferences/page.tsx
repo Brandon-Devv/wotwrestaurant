@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import {
   DndContext,
   closestCenter,
@@ -41,10 +43,23 @@ function SortableItem({ id, label }: { id: string, label: string }) {
 }
 
 export default function PreferencesPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
   const [preferencias, setPreferencias] = useState<Ingrediente[]>([])
   const [intolerancias, setIntolerancias] = useState<Ingrediente[]>([])
   const [ingredientesIniciales, setIngredientesIniciales] = useState<Ingrediente[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+
+  // Redirección si no está autenticado
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    }
+  }, [status, router])
+
+  // Evita renderizar si aún se carga o no está autenticado
+  if (status !== 'authenticated') return null
 
   useEffect(() => {
     async function fetchData() {

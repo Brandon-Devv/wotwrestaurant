@@ -7,6 +7,7 @@ declare module 'next-auth' {
       role: 'ADMIN' | 'CLIENT'
       email: string
       name?: string
+      phone?: string
     }
   }
 
@@ -15,6 +16,7 @@ declare module 'next-auth' {
     role: 'ADMIN' | 'CLIENT'
     email: string
     name?: string
+    phone?: string
   }
 }
 
@@ -24,5 +26,6 @@ declare module 'next-auth/jwt' {
     role: 'ADMIN' | 'CLIENT'
     email?: string
     name?: string
+    phone?: string
   }
 }
