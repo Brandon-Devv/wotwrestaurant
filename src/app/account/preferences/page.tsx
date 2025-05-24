@@ -27,13 +27,14 @@ function SortableItem({ id, label }: { id: string; label: string }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    cursor: 'grab',
   }
 
   return (
     <li
       ref={setNodeRef}
       style={style}
-      className="p-2 border rounded bg-white shadow-sm hover:bg-gray-100 cursor-pointer"
+      className="p-2 border rounded bg-white shadow-sm hover:bg-gray-100"
       {...attributes}
       {...listeners}
     >
@@ -86,14 +87,15 @@ export default function PreferencesPage() {
     if (!over || active.id === over.id) return
 
     const id = String(active.id)
-    const movedItem = preferencias.find(i => i.nombre === id) || intolerancias.find(i => i.nombre === id)
+    const movedItem =
+      preferencias.find(i => i.id === id) || intolerancias.find(i => i.id === id)
 
     if (!movedItem) return
 
     if (preferencias.some(i => i.id === movedItem.id)) {
       setPreferencias(prev => prev.filter(i => i.id !== movedItem.id))
       setIntolerancias(prev => [...prev, movedItem])
-    } else if (intolerancias.some(i => i.id === movedItem.id)) {
+    } else {
       setIntolerancias(prev => prev.filter(i => i.id !== movedItem.id))
       setPreferencias(prev => [...prev, movedItem])
     }
@@ -109,9 +111,7 @@ export default function PreferencesPage() {
   }
 
   function handleReset() {
-    const idsIntolerancias = intolerancias.map(i => i.id)
-    const nuevasPreferencias = ingredientesIniciales.filter(i => !idsIntolerancias.includes(i.id))
-    setPreferencias(nuevasPreferencias)
+    setPreferencias([...ingredientesIniciales])
     setIntolerancias([])
   }
 
@@ -134,37 +134,7 @@ export default function PreferencesPage() {
           Arrastra los ingredientes que no toleras al cuadro de intolerancias.
         </p>
 
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          modifiers={[restrictToVerticalAxis]}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow">
-              <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
-              <SortableContext items={preferencias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {preferencias.map(item => (
-                    <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
-                  ))}
-                </ul>
-              </SortableContext>
-            </div>
-
-            <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow">
-              <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
-              <SortableContext items={intolerancias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {intolerancias.map(item => (
-                    <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
-                  ))}
-                </ul>
-              </SortableContext>
-            </div>
-          </div>
-        </DndContext>
-
-        <div className="mt-10 flex justify-end gap-4">
+        <div className="mt-10 mb-10 flex justify-center gap-4">
           <button
             onClick={handleReset}
             className="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400"
@@ -178,6 +148,36 @@ export default function PreferencesPage() {
             Guardar preferencias
           </button>
         </div>
+
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow">
+              <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
+              <SortableContext items={preferencias.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                <ul className="space-y-2">
+                  {preferencias.map(item => (
+                    <SortableItem key={item.id} id={item.id} label={item.nombre} />
+                  ))}
+                </ul>
+              </SortableContext>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow">
+              <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
+              <SortableContext items={intolerancias.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                <ul className="space-y-2">
+                  {intolerancias.map(item => (
+                    <SortableItem key={item.id} id={item.id} label={item.nombre} />
+                  ))}
+                </ul>
+              </SortableContext>
+            </div>
+          </div>
+        </DndContext>
       </div>
     </main>
   )

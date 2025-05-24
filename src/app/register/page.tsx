@@ -20,7 +20,7 @@ export default function RegisterPage() {
 
   const validateName = (name: string) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,35}$/.test(name)
   const validateEmail = (email: string) => email.length <= 35
-  const validatePhone = (phone: string) => /^\+?[0-9]{7,15}$/.test(phone)
+  const validatePhone = (phone: string) => /^3\d{9}$/.test(phone)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +36,7 @@ export default function RegisterPage() {
     }
 
     if (!validatePhone(phone)) {
-      setError('El número de teléfono debe ser válido. Usa el formato internacional. Ej: +573001234567')
+      setError('Ingresa un número celular colombiano válido (10 dígitos, sin prefijo, con el numero 3 iniciando).')
       return
     }
 
@@ -102,9 +102,12 @@ export default function RegisterPage() {
             />
             <input
               type="tel"
-              placeholder="Número de teléfono (Ej: +573001234567)"
+              placeholder="Número de celular colombiano (Ej: 3001234567)"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                if (/^\d{0,10}$/.test(value)) setPhone(value)
+              }}
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
               required
             />

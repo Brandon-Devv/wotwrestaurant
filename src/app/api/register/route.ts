@@ -14,11 +14,12 @@ export async function POST(request: Request) {
       )
     }
 
-    const phoneRegex = /^\+?[0-9]{7,15}$/
+    // Validación estricta para celulares colombianos: 10 dígitos, inicia con 3
+    const phoneRegex = /^3\d{9}$/
     if (!phoneRegex.test(phone)) {
       return NextResponse.json(
         {
-          error: 'Formato de teléfono inválido. Usa el formato internacional. Ej: +573001234567',
+          error: 'El número de celular debe tener 10 dígitos y comenzar con 3 (Ej: 3001234567)',
         },
         { status: 400 }
       )
