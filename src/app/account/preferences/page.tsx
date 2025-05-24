@@ -22,7 +22,7 @@ interface Ingrediente {
   nombre: string
 }
 
-function SortableItem({ id, label }: { id: string, label: string }) {
+function SortableItem({ id, label }: { id: string; label: string }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -51,54 +51,50 @@ export default function PreferencesPage() {
   const [ingredientesIniciales, setIngredientesIniciales] = useState<Ingrediente[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
-  // Redirección si no está autenticado
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.replace('/login')
     }
   }, [status, router])
 
-  // Evita renderizar si aún se carga o no está autenticado
-  if (status !== 'authenticated') return null
-
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await axios.get('/api/preferences')
-        const preferenciasData: Ingrediente[] = res.data.preferencias || []
-        const intoleranciasData: Ingrediente[] = res.data.intolerancias || []
+    if (status === 'authenticated') {
+      const fetchData = async () => {
+        try {
+          const res = await axios.get('/api/preferences')
+          const preferenciasData: Ingrediente[] = res.data.preferencias || []
+          const intoleranciasData: Ingrediente[] = res.data.intolerancias || []
 
-        const all: Ingrediente[] = [...preferenciasData, ...intoleranciasData]
-        setIngredientesIniciales(all)
-        setPreferencias(preferenciasData)
-        setIntolerancias(intoleranciasData)
-      } catch (error: unknown) {
-        console.error('Error al obtener preferencias:', error)
-      } finally {
-        setLoading(false)
+          const all = [...preferenciasData, ...intoleranciasData]
+          setIngredientesIniciales(all)
+          setPreferencias(preferenciasData)
+          setIntolerancias(intoleranciasData)
+        } catch (error) {
+          console.error('Error al obtener preferencias:', error)
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
-    fetchData()
-  }, [])
+      fetchData()
+    }
+  }, [status])
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
     const id = String(active.id)
-
-    const movedItem = preferencias.find((i) => i.nombre === id)
-      || intolerancias.find((i) => i.nombre === id)
+    const movedItem = preferencias.find(i => i.nombre === id) || intolerancias.find(i => i.nombre === id)
 
     if (!movedItem) return
 
     if (preferencias.some(i => i.id === movedItem.id)) {
-      setPreferencias((prev) => prev.filter((i) => i.id !== movedItem.id))
-      setIntolerancias((prev) => [...prev, movedItem])
+      setPreferencias(prev => prev.filter(i => i.id !== movedItem.id))
+      setIntolerancias(prev => [...prev, movedItem])
     } else if (intolerancias.some(i => i.id === movedItem.id)) {
-      setIntolerancias((prev) => prev.filter((i) => i.id !== movedItem.id))
-      setPreferencias((prev) => [...prev, movedItem])
+      setIntolerancias(prev => prev.filter(i => i.id !== movedItem.id))
+      setPreferencias(prev => [...prev, movedItem])
     }
   }
 
@@ -118,7 +114,7 @@ export default function PreferencesPage() {
     setIntolerancias([])
   }
 
-  if (loading) return <p className="text-center mt-10">Cargando preferencias...</p>
+  if (status === 'loading' || loading) return <p className="text-center mt-10">Cargando preferencias...</p>
 
   return (
     <main
@@ -143,7 +139,7 @@ export default function PreferencesPage() {
               <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
               <SortableContext items={preferencias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {preferencias.map((item) => (
+                  {preferencias.map(item => (
                     <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
                   ))}
                 </ul>
@@ -154,7 +150,7 @@ export default function PreferencesPage() {
               <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
               <SortableContext items={intolerancias.map(i => i.nombre)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-2">
-                  {intolerancias.map((item) => (
+                  {intolerancias.map(item => (
                     <SortableItem key={item.id} id={item.nombre} label={item.nombre} />
                   ))}
                 </ul>
