@@ -67,6 +67,15 @@ export default function IngredientsPage() {
     const method = editId ? 'PUT' : 'POST'
 
     try {
+      const fechaIngreso = new Date(form.fechaIngreso || '')
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0)
+      if (fechaIngreso > hoy) {
+        setMensaje('La fecha de ingreso no puede ser mayor a la fecha actual.')
+        setEsExito(false)
+        return
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -130,6 +139,7 @@ export default function IngredientsPage() {
             type="date"
             name="fechaIngreso"
             min="2024-01-01"
+            max={new Date().toISOString().split('T')[0]}
             value={form.fechaIngreso || ''}
             onChange={handleChange}
             className="p-2 border rounded"
