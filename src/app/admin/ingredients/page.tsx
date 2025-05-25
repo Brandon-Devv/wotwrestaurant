@@ -61,21 +61,35 @@ export default function IngredientsPage() {
     setMensaje('')
     setEsExito(false)
 
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+
+    const fechaIngreso = new Date(form.fechaIngreso || '')
+    const fechaCaducidad = new Date(form.fechaCaducidad || '')
+
+    if (
+      isNaN(fechaIngreso.getTime()) ||
+      fechaIngreso > hoy ||
+      fechaIngreso < new Date('2024-01-01')
+    ) {
+      setMensaje('La fecha de ingreso debe estar entre el 01/01/2024 y hoy.')
+      return
+    }
+
+    if (
+      isNaN(fechaCaducidad.getTime()) ||
+      fechaCaducidad < fechaIngreso
+    ) {
+      setMensaje('La fecha de caducidad no puede ser menor a la de ingreso.')
+      return
+    }
+
     const url = editId
       ? `/api/admin/ingredients/${editId}`
       : '/api/admin/ingredients'
     const method = editId ? 'PUT' : 'POST'
 
     try {
-      const fechaIngreso = new Date(form.fechaIngreso || '')
-      const hoy = new Date()
-      hoy.setHours(0, 0, 0, 0)
-      if (fechaIngreso > hoy) {
-        setMensaje('La fecha de ingreso no puede ser mayor a la fecha actual.')
-        setEsExito(false)
-        return
-      }
-
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
