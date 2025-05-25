@@ -18,13 +18,18 @@ interface Pedido {
   }[]
 }
 
+// Extiende jsPDF para incluir el campo de autoTable sin usar `any`
+interface CustomJsPDF extends jsPDF {
+  lastAutoTable?: { finalY: number }
+}
+
 export default function AdminDashboardPage() {
   const [historial, setHistorial] = useState<Pedido[]>([])
 
   const today = new Date()
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
-  const minDate = new Date(2025, 3, 1)
+  const minDate = new Date(2025, 3, 1) // abril 1, 2025
 
   const [startDate, setStartDate] = useState<Date | null>(startOfDay)
   const [endDate, setEndDate] = useState<Date | null>(endOfDay)
@@ -63,7 +68,7 @@ export default function AdminDashboardPage() {
   const colores = ['#4ade80', '#facc15', '#60a5fa', '#fb7185', '#a78bfa', '#f472b6', '#34d399']
 
   function exportarPDF() {
-    const doc = new jsPDF()
+    const doc: CustomJsPDF = new jsPDF()
     doc.setFontSize(16)
     doc.text('Reporte de Ventas - Wonders Of The World Bogotá', 14, 20)
 
@@ -83,7 +88,7 @@ export default function AdminDashboardPage() {
       ])
     })
 
-    const finalY = (doc as any).lastAutoTable?.finalY || 35
+    const finalY = doc.lastAutoTable?.finalY || 35
 
     doc.setFontSize(11)
     doc.text(`Total Ingresos: $${totalIngresos.toLocaleString()}`, 14, finalY + 10)
@@ -110,9 +115,7 @@ export default function AdminDashboardPage() {
               endDate={endDate ?? undefined}
               minDate={minDate}
               maxDate={new Date()}
-              onChangeRaw={(e) => {
-                if (e?.preventDefault) e.preventDefault()
-              }}
+              onChangeRaw={(e) => e?.preventDefault()}
               className="border px-4 py-2 rounded-md w-48 cursor-pointer"
               dateFormat="yyyy-MM-dd"
               placeholderText="Fecha inicial"
@@ -128,9 +131,7 @@ export default function AdminDashboardPage() {
               endDate={endDate ?? undefined}
               minDate={startDate ?? minDate}
               maxDate={new Date()}
-              onChangeRaw={(e) => {
-                if (e?.preventDefault) e.preventDefault()
-              }}
+              onChangeRaw={(e) => e?.preventDefault()}
               className="border px-4 py-2 rounded-md w-48 cursor-pointer"
               dateFormat="yyyy-MM-dd"
               placeholderText="Fecha final"
