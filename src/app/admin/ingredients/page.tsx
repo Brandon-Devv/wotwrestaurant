@@ -20,6 +20,7 @@ export default function IngredientsPage() {
   const [form, setForm] = useState<Partial<Ingredient>>({})
   const [editId, setEditId] = useState<string | null>(null)
   const [mensaje, setMensaje] = useState<string>('')
+  const [esExito, setEsExito] = useState<boolean>(false)
 
   const fetchIngredientes = async () => {
     const res = await fetch('/api/admin/ingredients')
@@ -58,6 +59,8 @@ export default function IngredientsPage() {
 
   const handleSubmit = async () => {
     setMensaje('')
+    setEsExito(false)
+
     const url = editId
       ? `/api/admin/ingredients/${editId}`
       : '/api/admin/ingredients'
@@ -74,14 +77,18 @@ export default function IngredientsPage() {
 
       if (!res.ok) {
         setMensaje(data.error || 'Error al guardar')
+        setEsExito(false)
         return
       }
 
+      setMensaje(editId ? 'Ingrediente actualizado correctamente ✅' : 'Ingrediente guardado correctamente ✅')
+      setEsExito(true)
       setEditId(null)
       setForm({})
       await fetchIngredientes()
     } catch {
       setMensaje('Error inesperado al enviar el formulario.')
+      setEsExito(false)
     }
   }
 
@@ -122,6 +129,7 @@ export default function IngredientsPage() {
           <input
             type="date"
             name="fechaIngreso"
+            min="2024-01-01"
             value={form.fechaIngreso || ''}
             onChange={handleChange}
             className="p-2 border rounded"
@@ -129,6 +137,7 @@ export default function IngredientsPage() {
           <input
             type="date"
             name="fechaCaducidad"
+            min="2024-01-01"
             value={form.fechaCaducidad || ''}
             onChange={handleChange}
             className="p-2 border rounded"
@@ -150,7 +159,12 @@ export default function IngredientsPage() {
         >
           {editId ? 'Actualizar' : 'Guardar'}
         </button>
-        {mensaje && <p className="mt-4 text-red-600 font-semibold">{mensaje}</p>}
+
+        {mensaje && (
+          <p className={`mt-4 font-semibold px-3 py-2 rounded ${esExito ? 'bg-green-100 text-green-700 border border-green-300' : 'text-red-600'}`}>
+            {mensaje}
+          </p>
+        )}
       </section>
 
       <section>
