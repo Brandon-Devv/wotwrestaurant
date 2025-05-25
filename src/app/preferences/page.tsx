@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Ingredient } from '@prisma/client'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,9 +10,17 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 
 export default function PreferenciasPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
   const [ingredientes, setIngredientes] = useState<Ingredient[]>([])
   const [intolerancias, setIntolerancias] = useState<Ingredient[]>([])
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    }
+  }, [status, router])
 
   useEffect(() => {
     if (!session?.user?.email) return
@@ -57,6 +66,12 @@ export default function PreferenciasPage() {
       toast.error('Error al actualizar intolerancias')
     }
   }
+
+  if (status === 'loading') {
+    return <p className="text-center mt-10">Cargando preferencias...</p>
+  }
+
+  if (!session) return null
 
   return (
     <div className="max-w-5xl mx-auto">

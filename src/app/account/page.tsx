@@ -14,14 +14,11 @@ export default function MiCuentaPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  const name = session?.user?.name ?? ''
-  const email = session?.user?.email ?? ''
-  const phone = session?.user?.phone ?? ''
-
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -35,12 +32,19 @@ export default function MiCuentaPage() {
 
   if (!session) return null
 
+  const name = session.user.name ?? ''
+  const email = session.user.email ?? ''
+  const phone = session.user.phone ?? ''
+
   const validatePassword = (password: string) => {
     const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
     return regex.test(password)
   }
 
   const handleChangePassword = async () => {
+    setMessage('')
+    setSuccess(false)
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setMessage('Todos los campos son obligatorios.')
       return
@@ -52,9 +56,7 @@ export default function MiCuentaPage() {
     }
 
     if (!validatePassword(newPassword)) {
-      setMessage(
-        'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo.'
-      )
+      setMessage('La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo.')
       return
     }
 
@@ -63,6 +65,7 @@ export default function MiCuentaPage() {
         currentPassword,
         newPassword,
       })
+      setSuccess(true)
       setMessage('Contraseña actualizada correctamente ✅')
       setCurrentPassword('')
       setNewPassword('')
@@ -75,7 +78,7 @@ export default function MiCuentaPage() {
   }
 
   return (
-    <>
+    <div className="max-w-3xl mx-auto px-4">
       <h1 className="text-3xl font-bold text-center mb-8 text-green-700">👤 Mi Cuenta</h1>
 
       {/* Información personal */}
@@ -117,7 +120,11 @@ export default function MiCuentaPage() {
           >
             Cambiar contraseña
           </button>
-          {message && <p className="text-sm text-red-600 mt-1">{message}</p>}
+          {message && (
+            <p className={`text-sm mt-1 ${success ? 'text-green-600' : 'text-red-600'}`}>
+              {message}
+            </p>
+          )}
         </div>
       </section>
 
@@ -141,6 +148,6 @@ export default function MiCuentaPage() {
           Cerrar sesión
         </button>
       </div>
-    </>
+    </div>
   )
 }

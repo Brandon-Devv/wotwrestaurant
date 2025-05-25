@@ -19,6 +19,7 @@ export default function IngredientsPage() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [form, setForm] = useState<Partial<Ingredient>>({})
   const [editId, setEditId] = useState<string | null>(null)
+  const [mensaje, setMensaje] = useState<string>('')
 
   const fetchIngredientes = async () => {
     const res = await fetch('/api/admin/ingredients')
@@ -30,30 +31,58 @@ export default function IngredientsPage() {
     fetchIngredientes()
   }, [])
 
+  const sanitize = (name: string, value: string) => {
+    switch (name) {
+      case 'nombre':
+      case 'origen':
+      case 'tipoAlimento':
+      case 'proveedor':
+        return value.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ ]/g, '').slice(0, 50)
+      case 'lote':
+        return value.replace(/[^A-Za-z0-9\-]/g, '').slice(0, 30)
+      case 'registro':
+        return value.replace(/[^A-Za-z0-9._-]/g, '').slice(0, 40)
+      default:
+        return value
+    }
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     const inputName = name as keyof Ingredient
     setForm(prev => ({
       ...prev,
-      [inputName]: type === 'checkbox' ? checked : value,
+      [inputName]: type === 'checkbox' ? checked : sanitize(name, value),
     }))
   }
 
   const handleSubmit = async () => {
+    setMensaje('')
     const url = editId
       ? `/api/admin/ingredients/${editId}`
       : '/api/admin/ingredients'
     const method = editId ? 'PUT' : 'POST'
 
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
 
-    setEditId(null)
-    setForm({})
-    await fetchIngredientes()
+      const data = await res.json()
+
+      if (!res.ok) {
+        setMensaje(data.error || 'Error al guardar')
+        return
+      }
+
+      setEditId(null)
+      setForm({})
+      await fetchIngredientes()
+    } catch {
+      setMensaje('Error inesperado al enviar el formulario.')
+    }
   }
 
   const handleEdit = (ingredient: Ingredient) => {
@@ -74,7 +103,6 @@ export default function IngredientsPage() {
         🧪 Matriz de Trazabilidad
       </h1>
 
-      {/* Formulario */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-4">
           {editId ? 'Editar Ingrediente' : 'Agregar Ingrediente'}
@@ -122,9 +150,9 @@ export default function IngredientsPage() {
         >
           {editId ? 'Actualizar' : 'Guardar'}
         </button>
+        {mensaje && <p className="mt-4 text-red-600 font-semibold">{mensaje}</p>}
       </section>
 
-      {/* Tabla de Ingredientes */}
       <section>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Lista de Ingredientes</h2>
@@ -144,6 +172,8 @@ export default function IngredientsPage() {
                 <th className="p-2">Origen</th>
                 <th className="p-2">Tipo</th>
                 <th className="p-2">Proveedor</th>
+                <th className="p-2">Lote</th>
+                <th className="p-2">Registro</th>
                 <th className="p-2">Ingreso</th>
                 <th className="p-2">Caducidad</th>
                 <th className="p-2">Acciones</th>
@@ -157,6 +187,8 @@ export default function IngredientsPage() {
                   <td className="p-2">{i.origen}</td>
                   <td className="p-2">{i.tipoAlimento}</td>
                   <td className="p-2">{i.proveedor}</td>
+                  <td className="p-2">{i.lote}</td>
+                  <td className="p-2">{i.registro}</td>
                   <td className="p-2">{i.fechaIngreso?.slice(0, 10)}</td>
                   <td className="p-2">{i.fechaCaducidad?.slice(0, 10)}</td>
                   <td className="p-2 space-x-2">

@@ -1,15 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { usePersistentCart } from '@/lib/hooks/usePersistentCart'
 
 export default function CarritoPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const { items, removeFromCart, updateQuantity, clearCart } = usePersistentCart()
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login')
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return <p className="text-center mt-10">Cargando...</p>
+  }
+
+  if (!session) return null
 
   const total = items.reduce((sum: number, item) => sum + item.precioUnitario * item.cantidad, 0)
 
