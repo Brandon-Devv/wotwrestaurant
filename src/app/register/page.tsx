@@ -19,24 +19,24 @@ export default function RegisterPage() {
   }
 
   const validateName = (name: string) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{1,35}$/.test(name)
-  const validateEmail = (email: string) => email.length <= 35
+  const validateEmail = (email: string) => email.length <= 35 && email.includes('@')
   const validatePhone = (phone: string) => /^3\d{9}$/.test(phone)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateName(name)) {
-      setError('El nombre solo puede contener letras y espacios, máximo 35 caracteres.')
+      setError('El nombre solo puede contener letras y espacios, máximo 35 caracteres. No se permiten símbolos ni números.')
       return
     }
 
     if (!validateEmail(email)) {
-      setError('El correo electrónico no debe exceder los 35 caracteres.')
+      setError('El correo electrónico debe incluir "@" y no exceder los 35 caracteres.')
       return
     }
 
     if (!validatePhone(phone)) {
-      setError('Ingresa un número celular colombiano válido (10 dígitos, sin prefijo, con el numero 3 iniciando).')
+      setError('Ingresa un número celular colombiano válido (10 dígitos, debe iniciar con 3).')
       return
     }
 
@@ -83,20 +83,20 @@ export default function RegisterPage() {
 
           <form onSubmit={handleRegister} className="flex flex-col space-y-4">
             <input
-              type="text"
-              placeholder="Nombre completo"
-              value={name}
-              maxLength={35}
-              onChange={(e) => setName(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-              required
-            />
-            <input
               type="email"
               placeholder="Correo electrónico"
               value={email}
               maxLength={35}
               onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={name}
+              maxLength={35}
+              onChange={(e) => setName(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
               required
             />
