@@ -44,8 +44,7 @@ function SortableItem({ id, label }: { id: string; label: string }) {
 }
 
 export default function PreferencesPage() {
-  const sessionData = useSession()
-  const status = sessionData.status
+  const { status } = useSession()
   const router = useRouter()
 
   const [preferencias, setPreferencias] = useState<Ingrediente[]>([])
@@ -54,54 +53,41 @@ export default function PreferencesPage() {
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/login')
-    }
+    if (status === 'unauthenticated') router.replace('/login')
   }, [status, router])
 
   useEffect(() => {
     if (status === 'authenticated') {
-      const fetchData = async () => {
-        try {
-          const res = await axios.get('/api/preferences')
-          const preferenciasData: Ingrediente[] = res.data.preferencias || []
-          const intoleranciasData: Ingrediente[] = res.data.intolerancias || []
-
-          const all = [...preferenciasData, ...intoleranciasData]
-          setIngredientesIniciales(all)
-          setPreferencias(preferenciasData)
-          setIntolerancias(intoleranciasData)
-        } catch (error) {
-          console.error('Error al obtener preferencias:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      fetchData()
+      axios.get('/api/preferences').then(res => {
+        const pref: Ingrediente[] = res.data.preferencias || []
+        const intol: Ingrediente[] = res.data.intolerancias || []
+        setPreferencias(pref)
+        setIntolerancias(intol)
+        setIngredientesIniciales([...pref, ...intol])
+      }).catch(err => {
+        console.error('Error al obtener preferencias:', err)
+      }).finally(() => setLoading(false))
     }
   }, [status])
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
     const id = String(active.id)
-    const movedItem =
-      preferencias.find(i => i.id === id) || intolerancias.find(i => i.id === id)
 
-    if (!movedItem) return
+    const moved = preferencias.find(i => i.id === id) || intolerancias.find(i => i.id === id)
+    if (!moved) return
 
-    if (preferencias.some(i => i.id === movedItem.id)) {
-      setPreferencias(prev => prev.filter(i => i.id !== movedItem.id))
-      setIntolerancias(prev => [...prev, movedItem])
+    if (preferencias.some(i => i.id === id)) {
+      setPreferencias(prev => prev.filter(i => i.id !== id))
+      setIntolerancias(prev => [...prev, moved])
     } else {
-      setIntolerancias(prev => prev.filter(i => i.id !== movedItem.id))
-      setPreferencias(prev => [...prev, movedItem])
+      setIntolerancias(prev => prev.filter(i => i.id !== id))
+      setPreferencias(prev => [...prev, moved])
     }
   }
 
-  async function handleGuardar() {
+  const handleGuardar = async () => {
     try {
       await axios.post('/api/preferences', { intolerancias: intolerancias.map(i => i.id) })
       alert('Preferencias actualizadas correctamente.')
@@ -110,7 +96,7 @@ export default function PreferencesPage() {
     }
   }
 
-  function handleReset() {
+  const handleReset = () => {
     setPreferencias([...ingredientesIniciales])
     setIntolerancias([])
   }
@@ -122,63 +108,48 @@ export default function PreferencesPage() {
   if (status !== 'authenticated') return null
 
   return (
-    <main
-      className="min-h-screen bg-fixed bg-cover bg-center px-4 py-10"
-      style={{ backgroundImage: "url('/images/fondovectores.png')" }}
-    >
-      <div className="bg-white bg-opacity-95 backdrop-blur-md max-w-5xl mx-auto rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-center mb-8 text-green-800">
-          🍽️ Preferencias Alimentarias
-        </h1>
-        <p className="text-center text-gray-600 mb-10">
-          Arrastra los ingredientes que no toleras al cuadro de intolerancias.
-        </p>
+    <>
+      <h1 className="text-3xl font-bold text-center mb-8 text-green-800">🍽️ Preferencias Alimentarias</h1>
+      <p className="text-center text-gray-600 mb-10">Arrastra los ingredientes que no toleras al cuadro de intolerancias.</p>
 
-        <div className="mt-10 mb-10 flex justify-center gap-4">
-          <button
-            onClick={handleReset}
-            className="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400"
-          >
-            Resetear preferencias
-          </button>
-          <button
-            onClick={handleGuardar}
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-          >
-            Guardar preferencias
-          </button>
-        </div>
-
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          modifiers={[restrictToVerticalAxis]}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow">
-              <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
-              <SortableContext items={preferencias.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {preferencias.map(item => (
-                    <SortableItem key={item.id} id={item.id} label={item.nombre} />
-                  ))}
-                </ul>
-              </SortableContext>
-            </div>
-
-            <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow">
-              <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
-              <SortableContext items={intolerancias.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {intolerancias.map(item => (
-                    <SortableItem key={item.id} id={item.id} label={item.nombre} />
-                  ))}
-                </ul>
-              </SortableContext>
-            </div>
-          </div>
-        </DndContext>
+      <div className="mt-10 mb-10 flex justify-center gap-4">
+        <button onClick={handleReset} className="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400">
+          Resetear preferencias
+        </button>
+        <button onClick={handleGuardar} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+          Guardar preferencias
+        </button>
       </div>
-    </main>
+
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToVerticalAxis]}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-green-50 border border-green-200 p-6 rounded-xl shadow">
+            <h2 className="text-lg font-semibold text-green-900 mb-4">✅ Preferencias</h2>
+            <SortableContext items={preferencias.map(i => i.id)} strategy={verticalListSortingStrategy}>
+              <ul className="space-y-2">
+                {preferencias.map(item => (
+                  <SortableItem key={item.id} id={item.id} label={item.nombre} />
+                ))}
+              </ul>
+            </SortableContext>
+          </div>
+
+          <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow">
+            <h2 className="text-lg font-semibold text-red-700 mb-4">🚫 Intolerancias</h2>
+            <SortableContext items={intolerancias.map(i => i.id)} strategy={verticalListSortingStrategy}>
+              <ul className="space-y-2">
+                {intolerancias.map(item => (
+                  <SortableItem key={item.id} id={item.id} label={item.nombre} />
+                ))}
+              </ul>
+            </SortableContext>
+          </div>
+        </div>
+      </DndContext>
+    </>
   )
 }

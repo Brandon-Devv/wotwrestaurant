@@ -16,7 +16,7 @@ export default function MiCuentaPage() {
 
   const name = session?.user?.name ?? ''
   const email = session?.user?.email ?? ''
-  const phone = session?.user?.phone ?? '' 
+  const phone = session?.user?.phone ?? ''
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -75,77 +75,72 @@ export default function MiCuentaPage() {
   }
 
   return (
-    <main
-      className="min-h-screen bg-fixed bg-cover bg-center px-4 py-10"
-      style={{ backgroundImage: "url('/images/fondovectores.png')" }}
-    >
-      <div className="bg-white bg-opacity-95 backdrop-blur-md max-w-3xl mx-auto rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-center mb-8 text-green-700">👤 Mi Cuenta</h1>
+    <>
+      <h1 className="text-3xl font-bold text-center mb-8 text-green-700">👤 Mi Cuenta</h1>
 
-        {/* Información personal */}
-        <section className="mb-6 bg-white border rounded-lg shadow p-4">
-          <h2 className="text-xl font-semibold mb-2 text-gray-800">📋 Información personal</h2>
-          <p><strong>Nombre:</strong> {name}</p>
-          <p><strong>Correo:</strong> {email}</p>
-          <p><strong>Teléfono:</strong> {phone}</p>
-        </section>
+      {/* Información personal */}
+      <section className="mb-6 bg-white border rounded-lg shadow p-4">
+        <h2 className="text-xl font-semibold mb-2 text-gray-800">📋 Información personal</h2>
+        <p><strong>Nombre:</strong> {name}</p>
+        <p><strong>Correo:</strong> {email}</p>
+        <p><strong>Teléfono:</strong> {phone}</p>
+      </section>
 
-        {/* Cambio de contraseña */}
-        <section className="mb-6 bg-white border rounded-lg shadow p-4">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800">🔒 Cambiar contraseña</h2>
-          <div className="space-y-3">
-            <input
-              type="password"
-              placeholder="Contraseña actual"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-            />
-            <input
-              type="password"
-              placeholder="Nueva contraseña"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-            />
-            <input
-              type="password"
-              placeholder="Confirmar nueva contraseña"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
-            />
-            <button
-              onClick={handleChangePassword}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-            >
-              Cambiar contraseña
-            </button>
-            {message && <p className="text-sm text-red-600 mt-1">{message}</p>}
-          </div>
-        </section>
-
-        {/* Preferencias */}
-        <section className="mb-6 bg-white border rounded-lg shadow p-4">
-          <h2 className="text-xl font-semibold mb-2 text-gray-800">🥦 Preferencias alimentarias</h2>
-          <Link
-            href="/account/preferences"
-            className="text-green-700 underline hover:text-green-800"
-          >
-            Ir a preferencias →
-          </Link>
-        </section>
-
-        {/* Cerrar sesión */}
-        <div className="text-center mt-6">
+      {/* Cambio de contraseña */}
+      <section className="mb-6 bg-white border rounded-lg shadow p-4">
+        <h2 className="text-xl font-semibold mb-3 text-gray-800">🔒 Cambiar contraseña</h2>
+        <div className="space-y-3">
+          <input
+            type="password"
+            placeholder="Contraseña actual"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+          <input
+            type="password"
+            placeholder="Nueva contraseña"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+          <input
+            type="password"
+            placeholder="Confirmar nueva contraseña"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
           <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
+            onClick={handleChangePassword}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
           >
-            Cerrar sesión
+            Cambiar contraseña
           </button>
+          {message && <p className="text-sm text-red-600 mt-1">{message}</p>}
         </div>
+      </section>
+
+      {/* Preferencias */}
+      <section className="mb-6 bg-white border rounded-lg shadow p-4">
+        <h2 className="text-xl font-semibold mb-2 text-gray-800">🥦 Preferencias alimentarias</h2>
+        <Link
+          href="/account/preferences"
+          className="text-green-700 underline hover:text-green-800"
+        >
+          Ir a preferencias →
+        </Link>
+      </section>
+
+      {/* Cerrar sesión */}
+      <div className="text-center mt-6">
+        <button
+          onClick={() => signOut({ callbackUrl: '/' })}
+          className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
+        >
+          Cerrar sesión
+        </button>
       </div>
-    </main>
+    </>
   )
 }

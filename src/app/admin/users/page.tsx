@@ -54,36 +54,34 @@ export default function AdminUsersPage() {
   }, [])
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">👥 Gestión de Usuarios</h1>
+    <>
+      <h1 className="text-3xl font-bold mb-6 text-center text-green-700">👥 Gestión de Usuarios</h1>
 
       {error && (
         <p className="text-center text-red-600 font-medium mb-4">{error}</p>
       )}
 
-      <div className="bg-white rounded shadow border p-4 overflow-auto">
-        <table className="w-full table-auto text-left">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2">Nombre</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Rol</th>
-              <th className="p-2">Acciones</th>
+      <div className="overflow-auto rounded border border-gray-200 bg-white shadow">
+        <table className="w-full table-auto text-left text-sm">
+          <thead className="bg-green-100 text-gray-700 uppercase text-xs">
+            <tr>
+              <th className="px-4 py-2">Nombre</th>
+              <th className="px-4 py-2">Email</th>
+              <th className="px-4 py-2">Rol</th>
+              <th className="px-4 py-2">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-t">
-                <td className="p-2">{u.name || 'Sin nombre'}</td>
-                <td className="p-2">{u.email}</td>
-                <td className="p-2">{u.role}</td>
-                <td className="p-2">
+              <tr key={u.id} className="border-t hover:bg-gray-50">
+                <td className="px-4 py-2">{u.name || 'Sin nombre'}</td>
+                <td className="px-4 py-2">{u.email}</td>
+                <td className="px-4 py-2">{u.role}</td>
+                <td className="px-4 py-2">
                   <select
                     value={u.role}
-                    onChange={(e) =>
-                      changeRole(u.id, e.target.value as 'ADMIN' | 'CLIENT')
-                    }
-                    className="border px-2 py-1 rounded"
+                    onChange={(e) => changeRole(u.id, e.target.value as 'ADMIN' | 'CLIENT')}
+                    className="border px-2 py-1 rounded bg-white"
                   >
                     <option value="CLIENT">Cliente</option>
                     <option value="ADMIN">Administrador</option>
@@ -94,6 +92,6 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   )
 }

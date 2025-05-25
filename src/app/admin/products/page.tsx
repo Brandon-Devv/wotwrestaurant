@@ -71,8 +71,9 @@ export default function AdminProductsPage() {
   if (loading) return <p className="p-4">Cargando productos...</p>
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">🛠️ Administración de Productos</h1>
+    <>
+      <h1 className="text-3xl font-bold mb-6 text-center text-green-700">🛠️ Administración de Productos</h1>
+
       <div className="grid grid-cols-1 gap-6">
         {productos.map(producto => {
           const imageName = producto.nombre.toLowerCase().replace(/\s/g, '-')
@@ -131,6 +132,6 @@ export default function AdminProductsPage() {
           )
         })}
       </div>
-    </div>
+    </>
   )
 }

@@ -1,14 +1,15 @@
 import './globals.css'
 import AuthProvider from '@/components/AuthProvider'
 import Navbar from '@/components/Navbar'
-import { Inter } from 'next/font/google'
 import PageWrapper from '@/components/PageWrapper'
+import BackgroundWrapper from '@/components/BackgroundWrapper'
+import { Inter } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: "Wonders Of The World",
-  description: "Restaurante vegano y saludable",
+  title: 'Wonders Of The World',
+  description: 'Restaurante vegano y saludable',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Navbar />
           <PageWrapper>
-            {children}
+            <BackgroundWrapper>{children}</BackgroundWrapper>
           </PageWrapper>
         </AuthProvider>
       </body>

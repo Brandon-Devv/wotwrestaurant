@@ -18,7 +18,6 @@ interface Pedido {
   }[]
 }
 
-// Extiende jsPDF para incluir el campo de autoTable sin usar `any`
 interface CustomJsPDF extends jsPDF {
   lastAutoTable?: { finalY: number }
 }
@@ -29,7 +28,7 @@ export default function AdminDashboardPage() {
   const today = new Date()
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
-  const minDate = new Date(2025, 3, 1) // abril 1, 2025
+  const minDate = new Date(2025, 3, 1)
 
   const [startDate, setStartDate] = useState<Date | null>(startOfDay)
   const [endDate, setEndDate] = useState<Date | null>(endOfDay)
@@ -100,128 +99,123 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-fixed bg-cover bg-center px-4 py-10" style={{ backgroundImage: "url('/images/fondovectores.png')" }}>
-      <div className="bg-white bg-opacity-95 backdrop-blur-md max-w-6xl mx-auto rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-center text-green-700 mb-6">📈 Dashboard de Ventas</h1>
+    <>
+      <h1 className="text-3xl font-bold text-center text-green-700 mb-6">📈 Dashboard de Ventas</h1>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Desde:</label>
-            <DatePicker
-              selected={startDate ?? undefined}
-              onChange={setStartDate}
-              selectsStart
-              startDate={startDate ?? undefined}
-              endDate={endDate ?? undefined}
-              minDate={minDate}
-              maxDate={new Date()}
-              onChangeRaw={(e) => e?.preventDefault()}
-              className="border px-4 py-2 rounded-md w-48 cursor-pointer"
-              dateFormat="yyyy-MM-dd"
-              placeholderText="Fecha inicial"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Hasta:</label>
-            <DatePicker
-              selected={endDate ?? undefined}
-              onChange={setEndDate}
-              selectsEnd
-              startDate={startDate ?? undefined}
-              endDate={endDate ?? undefined}
-              minDate={startDate ?? minDate}
-              maxDate={new Date()}
-              onChangeRaw={(e) => e?.preventDefault()}
-              className="border px-4 py-2 rounded-md w-48 cursor-pointer"
-              dateFormat="yyyy-MM-dd"
-              placeholderText="Fecha final"
-            />
-          </div>
+      <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Desde:</label>
+          <DatePicker
+            selected={startDate ?? undefined}
+            onChange={setStartDate}
+            selectsStart
+            startDate={startDate ?? undefined}
+            endDate={endDate ?? undefined}
+            minDate={minDate}
+            maxDate={new Date()}
+            onChangeRaw={(e) => e?.preventDefault()}
+            className="border px-4 py-2 rounded-md w-48 cursor-pointer"
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Fecha inicial"
+          />
         </div>
-
-        <div className="flex justify-center mb-10">
-          <button onClick={exportarPDF} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Exportar PDF
-          </button>
-        </div>
-
-        {dataGrafico.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-xl font-semibold text-green-700 mb-4 text-center">🥧 Productos más vendidos</h2>
-            <div className="w-full h-80">
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    dataKey="cantidad"
-                    data={dataGrafico}
-                    nameKey="nombre"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={120}
-                    label
-                  >
-                    {dataGrafico.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={colores[index % colores.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          <div className="bg-green-50 rounded-lg p-4 shadow">
-            <h2 className="font-semibold text-green-700">Total Ingresos</h2>
-            <p className="text-2xl font-bold">${totalIngresos.toLocaleString()}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4 shadow">
-            <h2 className="font-semibold text-green-700">Total Pedidos</h2>
-            <p className="text-2xl font-bold">{totalPedidos}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4 shadow">
-            <h2 className="font-semibold text-green-700">Total Productos Vendidos</h2>
-            <p className="text-2xl font-bold">{totalProductos}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4 shadow">
-            <h2 className="font-semibold text-green-700">Promedio por Pedido</h2>
-            <p className="text-2xl font-bold">${promedioPorPedido.toFixed(2)}</p>
-          </div>
-        </div>
-
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">📋 Historial de Pedidos</h2>
-        <div className="overflow-x-auto bg-white shadow rounded-lg">
-          <table className="min-w-full text-sm text-left text-gray-700">
-            <thead className="bg-green-100 text-xs uppercase">
-              <tr>
-                <th className="px-4 py-2">Fecha</th>
-                <th className="px-4 py-2">Usuario</th>
-                <th className="px-4 py-2">Productos</th>
-                <th className="px-4 py-2">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historial.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-4 text-gray-500">
-                    No hay pedidos registrados en este rango.
-                  </td>
-                </tr>
-              ) : (
-                historial.map((pedido) => (
-                  <tr key={pedido.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">{new Date(pedido.fecha).toLocaleString()}</td>
-                    <td className="px-4 py-2">{pedido.usuario}</td>
-                    <td className="px-4 py-2">{pedido.productos.map(p => `${p.nombre} (${p.cantidad})`).join(', ')}</td>
-                    <td className="px-4 py-2 font-semibold">${pedido.total.toLocaleString()}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div>
+          <label className="block text-sm text-gray-700 mb-1">Hasta:</label>
+          <DatePicker
+            selected={endDate ?? undefined}
+            onChange={setEndDate}
+            selectsEnd
+            startDate={startDate ?? undefined}
+            endDate={endDate ?? undefined}
+            minDate={startDate ?? minDate}
+            maxDate={new Date()}
+            onChangeRaw={(e) => e?.preventDefault()}
+            className="border px-4 py-2 rounded-md w-48 cursor-pointer"
+            dateFormat="yyyy-MM-dd"
+            placeholderText="Fecha final"
+          />
         </div>
       </div>
-    </main>
+
+      <div className="flex justify-center mb-10">
+        <button onClick={exportarPDF} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Exportar PDF
+        </button>
+      </div>
+
+      {dataGrafico.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-xl font-semibold text-green-700 mb-4 text-center">🥧 Productos más vendidos</h2>
+          <div className="w-full h-80">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  dataKey="cantidad"
+                  data={dataGrafico}
+                  nameKey="nombre"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {dataGrafico.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={colores[index % colores.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <InfoCard label="Total Ingresos" value={`$${totalIngresos.toLocaleString()}`} />
+        <InfoCard label="Total Pedidos" value={totalPedidos} />
+        <InfoCard label="Total Productos Vendidos" value={totalProductos} />
+        <InfoCard label="Promedio por Pedido" value={`$${promedioPorPedido.toFixed(2)}`} />
+      </div>
+
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">📋 Historial de Pedidos</h2>
+      <div className="overflow-x-auto bg-white shadow rounded-lg">
+        <table className="min-w-full text-sm text-left text-gray-700">
+          <thead className="bg-green-100 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-2">Fecha</th>
+              <th className="px-4 py-2">Usuario</th>
+              <th className="px-4 py-2">Productos</th>
+              <th className="px-4 py-2">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {historial.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="text-center py-4 text-gray-500">
+                  No hay pedidos registrados en este rango.
+                </td>
+              </tr>
+            ) : (
+              historial.map((pedido) => (
+                <tr key={pedido.id} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-2">{new Date(pedido.fecha).toLocaleString()}</td>
+                  <td className="px-4 py-2">{pedido.usuario}</td>
+                  <td className="px-4 py-2">{pedido.productos.map(p => `${p.nombre} (${p.cantidad})`).join(', ')}</td>
+                  <td className="px-4 py-2 font-semibold">${pedido.total.toLocaleString()}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+function InfoCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-green-50 rounded-lg p-4 shadow">
+      <h2 className="font-semibold text-green-700">{label}</h2>
+      <p className="text-2xl font-bold">{value}</p>
+    </div>
   )
 }
