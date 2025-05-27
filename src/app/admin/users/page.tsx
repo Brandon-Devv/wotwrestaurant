@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface User {
   id: string
@@ -11,8 +12,11 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+  const { data: session } = useSession()
   const [users, setUsers] = useState<User[]>([])
   const [error, setError] = useState<string>('')
+
+  const currentUserId = session?.user?.id
 
   const fetchUsers = async () => {
     try {
@@ -31,6 +35,11 @@ export default function AdminUsersPage() {
   }
 
   const changeRole = async (id: string, newRole: 'ADMIN' | 'CLIENT') => {
+    if (id === currentUserId) {
+      alert('No puedes modificar tu propio rol')
+      return
+    }
+
     try {
       const res = await fetch('/api/admin/users', {
         method: 'PATCH',
@@ -72,23 +81,28 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2">{u.name || 'Sin nombre'}</td>
-                <td className="px-4 py-2">{u.email}</td>
-                <td className="px-4 py-2">{u.role}</td>
-                <td className="px-4 py-2">
-                  <select
-                    value={u.role}
-                    onChange={(e) => changeRole(u.id, e.target.value as 'ADMIN' | 'CLIENT')}
-                    className="border px-2 py-1 rounded bg-white"
-                  >
-                    <option value="CLIENT">Cliente</option>
-                    <option value="ADMIN">Administrador</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
+            {users.map((u) => {
+              const isSelf = u.id === currentUserId
+              return (
+                <tr key={u.id} className="border-t hover:bg-gray-50">
+                  <td className="px-4 py-2">{u.name || 'Sin nombre'}</td>
+                  <td className="px-4 py-2">{u.email}</td>
+                  <td className="px-4 py-2">{u.role}</td>
+                  <td className="px-4 py-2">
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeRole(u.id, e.target.value as 'ADMIN' | 'CLIENT')}
+                      className="border px-2 py-1 rounded bg-white"
+                      disabled={isSelf}
+                      title={isSelf ? 'No puedes modificar tu propio rol' : ''}
+                    >
+                      <option value="CLIENT">Cliente</option>
+                      <option value="ADMIN">Administrador</option>
+                    </select>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

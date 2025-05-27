@@ -33,9 +33,10 @@ export default function AdminProductsPage() {
     field: keyof Pick<Product, 'precio' | 'stock'>,
     value: string
   ) => {
+    const numericValue = value.replace(/\D/g, '') // solo dígitos
     setProductos(prev =>
       prev.map(p =>
-        p.id === id ? { ...p, [field]: field === 'precio' ? parseFloat(value) : parseInt(value) } : p
+        p.id === id ? { ...p, [field]: parseInt(numericValue) || 0 } : p
       )
     )
   }
@@ -62,6 +63,16 @@ export default function AdminProductsPage() {
 
   const handleImageError = (id: string) => {
     setErrorImages(prev => ({ ...prev, [id]: true }))
+  }
+
+  const onlyAllowDigits = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End']
+    const isControl = allowedKeys.includes(e.key)
+    const isNumber = /^\d$/.test(e.key)
+
+    if (!isNumber && !isControl) {
+      e.preventDefault()
+    }
   }
 
   if (!session || session.user.role !== 'ADMIN') {
@@ -104,18 +115,24 @@ export default function AdminProductsPage() {
                   <div>
                     <label className="text-sm block text-gray-600">Precio ($)</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={isNaN(producto.precio) ? '' : producto.precio}
                       onChange={e => handleChange(producto.id, 'precio', e.target.value)}
+                      onKeyDown={onlyAllowDigits}
                       className="border px-2 py-1 rounded w-24"
                     />
                   </div>
                   <div>
                     <label className="text-sm block text-gray-600">Stock</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={isNaN(producto.stock) ? '' : producto.stock}
                       onChange={e => handleChange(producto.id, 'stock', e.target.value)}
+                      onKeyDown={onlyAllowDigits}
                       className="border px-2 py-1 rounded w-20"
                     />
                   </div>
